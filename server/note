@@ -1,0 +1,14 @@
+--- tama ---
+-- tamaserver --
+- stati dei client -
+0: morto (manuale)
+1: spento, accensione remota non funzionante
+2: spento (non da tamaserver)
+3: spento da tamaserver
+4: non gestito da tamaserver
+5: acceso, tamaclient non funzionante
+7: acceso
+- numero di utenti -
+-2: client spento
+-1: sconosciuto
+
