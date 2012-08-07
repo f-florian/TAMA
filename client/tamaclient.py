@@ -1,4 +1,5 @@
 #!/usr/bin/python
+# -*- coding: utf-8 -*-
 
 # tamaclient.py
 # This file is part of tama
@@ -19,9 +20,9 @@
 # along with tama. If not, see <http://www.gnu.org/licenses/>.
 
 import os
-import sqlalchemy
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+#~ import sqlalchemy
+#~ from sqlalchemy.ext.declarative import declarative_base
+#~ from sqlalchemy.orm import sessionmaker
 import thread
 import socket
 import signal
@@ -29,15 +30,15 @@ import subprocess
 import datetime
 
 debug = 4
-PID_FILE_PATH = "tamaclient.pid"
-AUTH_DB_PATH = "auth.db"
+PID_FILE_PATH = "tamaclientar51.pid"
+#AUTH_DB_PATH = "auth.db"
 TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
-AUTH_LOG_PATH = 'auth.log'
+#AUTH_LOG_PATH = 'auth.log'
 PORT = 12345
 
 def debugMessage (level, msg):
     if level <=debug:
-        print "[Tamaclient - debug] "+str(msg)
+        print "[Tamaclientar51 - debug] "+str(msg)
         
 
 if os.path.exists(PID_FILE_PATH):
@@ -48,57 +49,59 @@ else:
         pid_file.write(str(os.getpid())+"\n")
         pid_file.close()
 
-engine = sqlalchemy.create_engine('sqlite:///'+AUTH_DB_PATH)
-Base = declarative_base()
+#~ engine = sqlalchemy.create_engine('sqlite:///'+AUTH_DB_PATH)
+#~ Base = declarative_base()
 
-class Event (Base):
-    __tablename__ = 'events'
-    
-    id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
-    date = sqlalchemy.Column(sqlalchemy.DateTime)
-    action = sqlalchemy.Column(sqlalchemy.String)
-    user = sqlalchemy.Column(sqlalchemy.String)
-    program = sqlalchemy.Column(sqlalchemy.String)
-    source = sqlalchemy.Column(sqlalchemy.String)
-    source_ip = sqlalchemy.Column(sqlalchemy.String)
-    
-    def __init__ (self, date, action, user, program, source, source_ip):
-        self.date = date
-        self.action = action
-        self.user = user
-        self.program = program
-        self.source = source
-        self.source_ip = source_ip
+#~ class Event (Base):
+    #~ __tablename__ = 'events'
+    #~ 
+    #~ id = sqlalchemy.Column(sqlalchemy.Integer, primary_key=True)
+    #~ date = sqlalchemy.Column(sqlalchemy.DateTime)
+    #~ action = sqlalchemy.Column(sqlalchemy.String)
+    #~ user = sqlalchemy.Column(sqlalchemy.String)
+    #~ program = sqlalchemy.Column(sqlalchemy.String)
+    #~ source = sqlalchemy.Column(sqlalchemy.String)
+    #~ source_ip = sqlalchemy.Column(sqlalchemy.String)
+    #~ 
+    #~ def __init__ (self, date, action, user, program, source, source_ip):
+        #~ self.date = date
+        #~ self.action = action
+        #~ self.user = user
+        #~ self.program = program
+        #~ self.source = source
+        #~ self.source_ip = source_ip
 
-Base.metadata.create_all(engine) 
-Session = sessionmaker(bind=engine)
-session = Session()
+#~ Base.metadata.create_all(engine) 
+#~ Session = sessionmaker(bind=engine)
+#~ session = Session()
 
-if os.path.isfile(AUTH_LOG_PATH+".1"):
-    os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
-os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
-start_event = Event(datetime.datetime.today(),"start","tama","tamaclient",socket.gethostname(),"")
-session.add(start_event)
-session.commit()
+#~ if os.path.isfile(AUTH_LOG_PATH+".1"):
+    #~ os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
+#~ os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
+#~ start_event = Event(datetime.datetime.today(),"start","tama","tamaclient",socket.gethostname(),"")
+#~ session.add(start_event)
+#~ session.commit()
 
 
-def connectedUser(start_id):
-    # Count session opened and closed from the last tamaclient start
-    opened = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='open').filter(Event.user != 'lightdm').count()
-    closed = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='close').filter(Event.user != 'lightdm').count()
-    return opened - closed
+def connectedUser():
+    #~ # Count session opened and closed from the last tamaclient start
+    #~ opened = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='open').filter(Event.user != 'lightdm').count()
+    #~ closed = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='close').filter(Event.user != 'lightdm').count()
+    #~ return opened - closed
+    (stdout, stderr) = subprocess.Popen([TAMA_DIR+"tamauserar51.sh",""], stdout=subprocess.PIPE).communicate()
+    return stdout
 
 def temperature(n):
     (stdout, stderr) = subprocess.Popen([TAMA_DIR+"tamatemp.sh","0"], stdout=subprocess.PIPE).communicate()
     return stdout
 
 
-def connection(conn, start_event):
-    start_id = start_event.id
+def connection(conn):
+    #~ start_id = start_event.id
     debugMessage(4,"new connection")
-    if os.path.isfile(AUTH_LOG_PATH+".1"):
-        os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
-    os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
+    #~ if os.path.isfile(AUTH_LOG_PATH+".1"):
+        #~ os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
+    #~ os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
     debugMessage(4,"starting while for incoming orders")
     while(1):
         string=conn.recv(1024)
@@ -107,7 +110,7 @@ def connection(conn, start_event):
         string = string.rstrip('\n')
         if string == 'connected':
             debugMessage(4,"executing connectedUser()")
-            conn.send(str(connectedUser(start_id))+"\n")
+            conn.send(str(connectedUser())+"\n")
         elif string == 'temp0':
             debugMessage(4,"execuiting temperature(0)")
             conn.send(str(temperature(0))+"\n")
@@ -143,7 +146,7 @@ signal.signal(signal.SIGINT,sigExit)
 
 while (1):
     conn, addr = s.accept()
-    thread.start_new_thread ( connection , ( conn , start_event) )
+    thread.start_new_thread ( connection , ( conn ,) )
 
 
 os.remove(PID_FILE_PATH)

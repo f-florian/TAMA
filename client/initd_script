@@ -2,15 +2,16 @@
 
 ### BEGIN INIT INFO
 # Provides:          tama
-# Required-Start:    $remote_fs $syslog $network $time 
-# Required-Stop:     $remote_fs $syslog
+# Required-Start:    $remote_fs $network $time 
+# Required-Stop:     $remote_fs
+# Required-Stop:     $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
 # Short-Description: Start tama at boot time
 # Description:       Enable service provided by tamaclient from the tama suite.
 ### END INIT INFO
 
-PROG="tamaclient"
+PROG="tamaclientar51"
 PROG_PATH="/usr/local/sbin/tama"
 PID_PATH="/var/run"
 
@@ -21,8 +22,8 @@ start() {
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
-            $PROG_PATH/$PROG.py $PROG_ARGS 2>&1 >/dev/null &
-	    /etc/init.d/rsyslog restart
+            $PROG_PATH/$PROG.py $PROG_ARGS 2>&1 >/var/log/tama.log &
+	    #/etc/init.d/rsyslog restart
         echo "$PROG started"
     fi
 }
@@ -37,7 +38,7 @@ stop() {
         else
             echo "$PROG stopped"
         fi
-	/etc/init.d/rsyslog restart
+	#/etc/init.d/rsyslog restart
     else
         ## Program is not running, exit with error.
         echo "Error! $PROG not started!" 1>&2
