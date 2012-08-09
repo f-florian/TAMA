@@ -66,6 +66,7 @@ def parse_tama_config():
         
         pid_file_path = tama_config.get("tamaserver","pid_file_path")
         free_policy_file = tama_config.get("tamaserver","free_policy_file")
+        eth_interface = tama_config.get("tamaserver","eth_interface")
     except:
         print "[tamaserver] error while parsing "+free_policy_file
         print "[tamaserver] exiting..."
@@ -257,7 +258,7 @@ class Client(Base):
         
         """
         debug_message(2,"Accendo "+self.name)
-        os.system(TAMA_DIR+"tamason.sh "+self.mac)
+        os.system(TAMA_DIR+"tamason.sh "+self.mac+" "+eth_interface)
         
     
     def switch_on(self):
@@ -285,7 +286,7 @@ class Client(Base):
             return True
         else:
             debug_message(2,"Riprovo l'accensione di "+self.name)
-            os.system(TAMA_DIR+"tamason.sh "+self.mac)
+            self.switch_on_simple()
             time.sleep(60)
             online = self.is_online()
             if online:
