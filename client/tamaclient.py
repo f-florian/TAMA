@@ -18,6 +18,11 @@
 # You should have received a copy of the GNU General Public License
 # along with tama. If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This is the main deamon runned at startup on all client
+
+"""
+
 import os
 import sqlalchemy
 from sqlalchemy.ext.declarative import declarative_base
@@ -27,28 +32,39 @@ import socket
 import signal
 import subprocess
 import datetime
+import ConfigParser
 
-debug = 4
-PID_FILE_PATH = "tamaclient.pid"
-AUTH_DB_PATH = "auth.db"
-TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
-AUTH_LOG_PATH = 'auth.log'
-PORT = 12345
+TAMA_CONFIG_FILE = "/etc/tama.ini"
+
+tama_config = ConfigParser.ConfigParser()
+tama_config.read(TAMA_CONFIG_FILE)
+try:
+    debug = tama_config.getint("default","debug")
+    tama_dir = tama_config.getint("default","tama_dir")
+    pid_file_path = tama_config.getint("tamaclient","pid_file_path")
+    auth_db_path = tama_config.getint("tamaclient","auth_db_path")
+    auth_log_path = tama_config.getint("tamaclient","auth_log_path")
+    port = tama_config.getint("tamaclient","port")
+except:
+    print "[tamaclient] error while parsing "+TAMA_CONFIG_FILE
+    print "[tamaclient] exiting..."
+    exit(2)
+
 
 def debugMessage (level, msg):
     if level <=debug:
         print "[Tamaclient - debug] "+str(msg)
         
 
-if os.path.exists(PID_FILE_PATH):
+if os.path.exists(pid_file_path):
         debugMessage(1, "Tamaclient is already running, exiting")
         exit(0)
 else:
-        pid_file = open(PID_FILE_PATH, "w")
+        pid_file = open(pid_file_path, "w")
         pid_file.write(str(os.getpid())+"\n")
         pid_file.close()
 
-engine = sqlalchemy.create_engine('sqlite:///'+AUTH_DB_PATH)
+engine = sqlalchemy.create_engine('sqlite:///'+auth_db_path)
 Base = declarative_base()
 
 class Event (Base):
@@ -74,9 +90,9 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
-if os.path.isfile(AUTH_LOG_PATH+".1"):
-    os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
-os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
+if os.path.isfile(auth_log_path+".1"):
+    os.system(tama_dir+"tamaauth.py "+auth_log_path+".1")
+os.system(tama_dir+"tamaauth.py "+auth_log_path)
 start_event = Event(datetime.datetime.today(),"start","tama","tamaclient",socket.gethostname(),"")
 session.add(start_event)
 session.commit()
@@ -89,16 +105,16 @@ def connectedUser(start_id):
     return opened - closed
 
 def temperature(n):
-    (stdout, stderr) = subprocess.Popen([TAMA_DIR+"tamatemp.sh","0"], stdout=subprocess.PIPE).communicate()
+    (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh","0"], stdout=subprocess.PIPE).communicate()
     return stdout
 
 
 def connection(conn, start_event):
     start_id = start_event.id
     debugMessage(4,"new connection")
-    if os.path.isfile(AUTH_LOG_PATH+".1"):
-        os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH+".1")
-    os.system(TAMA_DIR+"tamaauth.py "+AUTH_LOG_PATH)
+    if os.path.isfile(auth_log_path+".1"):
+        os.system(tama_dir+"tamaauth.py "+auth_log_path+".1")
+    os.system(tama_dir+"tamaauth.py "+auth_log_path)
     debugMessage(4,"starting while for incoming orders")
     while(1):
         string=conn.recv(1024)
@@ -123,7 +139,7 @@ def connection(conn, start_event):
 
 
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind (( "" , PORT ))
+s.bind (( "" , port ))
 s.listen(5)
 
 def sigExit(signum, frame):
@@ -135,7 +151,7 @@ def sigExit(signum, frame):
     #stop_event = Event(datetime.datetime.today(),"stop","tama","tamaclient",socket.gethostname(),"")
     #session.add(stop_event)
     #session.commit()
-    os.remove(PID_FILE_PATH)
+    os.remove(pid_file_path)
     exit(0)
 
 signal.signal(signal.SIGTERM,sigExit)
@@ -146,4 +162,4 @@ while (1):
     thread.start_new_thread ( connection , ( conn , start_event) )
 
 
-os.remove(PID_FILE_PATH)
+os.remove(pid_file_path)
