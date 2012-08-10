@@ -36,6 +36,7 @@ import ConfigParser
 
 TAMA_CONFIG_FILE = "/etc/tama.ini"
 
+# Parse the config file
 tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
@@ -52,18 +53,24 @@ except:
 
 
 def debugMessage (level, msg):
+    """
+    Default function to print debug messages
+    
+    """
     if level <=debug:
         print "[Tamaclient - debug] "+str(msg)
         
-
+# Check if tamaclient is already running
 if os.path.exists(pid_file_path):
-        debugMessage(1, "Tamaclient is already running, exiting")
-        exit(0)
+    debugMessage(1, "Tamaclient is already running, exiting")
+    exit(0)
 else:
-        pid_file = open(pid_file_path, "w")
-        pid_file.write(str(os.getpid())+"\n")
-        pid_file.close()
+    # Create the .pid file
+    pid_file = open(pid_file_path, "w")
+    pid_file.write(str(os.getpid())+"\n")
+    pid_file.close()
 
+# Initialize database connection
 engine = sqlalchemy.create_engine('sqlite:///'+auth_db_path)
 Base = declarative_base()
 
@@ -90,26 +97,44 @@ Base.metadata.create_all(engine)
 Session = sessionmaker(bind=engine)
 session = Session()
 
+# Initial parsing of config files (this are the old entry before the switch on of the client)
 if os.path.isfile(auth_log_path+".1"):
     os.system(tama_dir+"tamaauth.py "+auth_log_path+".1")
 os.system(tama_dir+"tamaauth.py "+auth_log_path)
+
+# Add to the database a event for the client start
 start_event = Event(datetime.datetime.today(),"start","tama","tamaclient",socket.gethostname(),"")
 session.add(start_event)
 session.commit()
 
 
 def connectedUser(start_id):
+    """
+    This function query the database and returns the number of client connected at this time
+
+    Arguments:
+    start_id: the id of the last start client event
+    
+    """
     # Count session opened and closed from the last tamaclient start
     opened = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='open').filter(Event.user != 'lightdm').count()
     closed = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='close').filter(Event.user != 'lightdm').count()
     return opened - closed
 
 def temperature(n):
-    (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh","0"], stdout=subprocess.PIPE).communicate()
+    """
+    Return the temperature of core number n
+    
+    """
+    (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",str(n)], stdout=subprocess.PIPE).communicate()
     return stdout
 
 
 def connection(conn, start_event):
+    """
+    This function manage the incoming connections
+    
+    """
     start_id = start_event.id
     debugMessage(4,"new connection")
     if os.path.isfile(auth_log_path+".1"):
@@ -137,7 +162,7 @@ def connection(conn, start_event):
     conn.close()
 
 
-
+# Open the socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 s.bind (( "" , port ))
 s.listen(5)
@@ -158,6 +183,7 @@ signal.signal(signal.SIGTERM,sigExit)
 signal.signal(signal.SIGINT,sigExit)
 
 while (1):
+    # Main loop
     conn, addr = s.accept()
     thread.start_new_thread ( connection , ( conn , start_event) )
 
