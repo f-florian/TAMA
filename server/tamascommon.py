@@ -45,37 +45,36 @@ import socket
 import subprocess
 import datetime
 import time
+import ConfigParser
 
-TAMA_CONFIG_FILE = "tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama.ini"
 
-_debug = 4
-MAIN_DB_PATH = "main.db"
-TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
+_debug = 0
+#MAIN_DB_PATH = "main.db"
+#TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
 
 def debug_message (level, msg):
     if level <=_debug:
         print "[Tamascommon - debug] "+str(msg)
 
-def parse_tama_config():
-    debug_message(4,"parsing "+TAMA_CONFIG_FILE)
-    tama_config = ConfigParser.ConfigParser()
-    tama_config.read(TAMA_CONFIG_FILE)
-    try:
-        _debug = tama_config.getint("default","debug")
-        tama_dir = tama_config.get("default","tama_dir")
-        
-        pid_file_path = tama_config.get("tamaserver","pid_file_path")
-        free_policy_file = tama_config.get("tamaserver","free_policy_file")
-    except:
-        print "[tamaserver] error while parsing "+free_policy_file
-        print "[tamaserver] exiting..."
-        os.remove(pid_file_path)
-        exit(0)
+
+debug_message(4,"parsing "+TAMA_CONFIG_FILE)
+tama_config = ConfigParser.ConfigParser()
+tama_config.read(TAMA_CONFIG_FILE)
+try:
+    _debug = tama_config.getint("default","debug")
+    tama_dir = tama_config.get("default","tama_dir")
+    main_db_path = tama_config.get("tamascommon","main_db_path")
+    eth_interface = tama_config.get("tamascommon","eth_interface")
+except:
+    print "[tamascommon] error while parsing "+TAMA_CONFIG_FILE
+    print "[tamascommon] exiting..."
+    exit(2)
     
 
-#parse_tama_config()
 
-engine = sqlalchemy.create_engine('sqlite:///'+MAIN_DB_PATH)
+
+engine = sqlalchemy.create_engine('sqlite:///'+main_db_path)
 Base = sqlalchemy.ext.declarative.declarative_base()
 
 class Client(Base):
@@ -257,7 +256,7 @@ class Client(Base):
         
         """
         debug_message(2,"Accendo "+self.name)
-        os.system(TAMA_DIR+"tamason.sh "+self.mac)
+        os.system(TAMA_DIR+"tamason.sh "+self.mac+" "+eth_interface)
         
     
     def switch_on(self):
@@ -285,7 +284,7 @@ class Client(Base):
             return True
         else:
             debug_message(2,"Riprovo l'accensione di "+self.name)
-            os.system(TAMA_DIR+"tamason.sh "+self.mac)
+            self.switch_on_simple()
             time.sleep(60)
             online = self.is_online()
             if online:
