@@ -192,6 +192,10 @@ def temperatures(options):
     
 
 def switchon(options):
+    """
+    Try to switch on one client
+    
+    """
     try:
         client = tama.session.query(tama.Client).\
                         filter(tama.Client.name==options.name).one()
@@ -217,6 +221,67 @@ def switchon(options):
             client.switch_on_simple()
     
 
+def myBool(string):
+    """
+    Convert a string (True/False) in a boolean value
+    
+    """
+    string = string.lower()
+    if string in [ "true", "1", "yes" ]:
+        return True
+    elif string in [ "false", "0", "no" ]:
+        return False
+    else:
+        raise Exception ("Invalid bool string")
+
+def validateIP(string):
+    """
+    Return string if string is a IP, else raise an exception
+    
+    """
+    # TODO
+    return string
+
+def validateMAC(string):
+    """
+    Return string if string is a MAC address, else raise an exception
+    
+    """
+    # TODO
+    return string
+
+
+
+
+def addclientString(dataString):
+    """
+    Add a new client in the database taking data from a string
+    
+    dataString contain comma separeted values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    """
+    dataArray = dataString.split(",")
+    name = dataArray[0]
+    ip = validateIP(dataArray[1])
+    mac = validateMAC(dataArray[2])
+    state = int(dataArray[3])
+    auto_on = myBool(dataArray[4])
+    auto_off = myBool(dataArray[5])
+    always_on = myBool(dataArray[6])
+    
+    tama.session.add(tama.Client(name, ip, mac, users, state, auto_on, auto_off, always_on, count))
+    print "Client "+name+" added"
+
+
+
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
@@ -227,6 +292,7 @@ mainParser.add_argument("action",
                                     "temperatures",
                                     "switchon",
                                   #  "switchoff",
+                                    "addclient",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -297,6 +363,13 @@ switchonParser.add_argument("--force","-f",
                             help="Force to switch on the client",
                             action="store_true")
 
+addclientParser = argparse.ArgumentParser(description="Add a new client in the database",
+                                          prog = sys.argv[0]+" addclient")
+addclientParser.add_argument("--file", "-f",
+                             help="Load client data from file (one client for line)",
+                             type=argparse.FileType('r')
+                            )
+
 mainNS = mainParser.parse_args()
 print mainNS.action
 print mainNS.args
@@ -315,4 +388,8 @@ elif mainNS.action=="temperatures":
 elif mainNS.action=="switchon":
     switchonNS = switchonParser.parse_args(mainNS.args)
     switchon(switchonNS)
+elif mainNS.action=="addclient":
+    addclientNS = addclientParser.parse_args(mainNS.args)
+    addclient(addclientNS)
+
 
