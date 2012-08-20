@@ -251,8 +251,6 @@ def validateMAC(string):
     return string
 
 
-
-
 def addclientString(dataString):
     """
     Add a new client in the database taking data from a string
@@ -276,11 +274,112 @@ def addclientString(dataString):
     auto_on = myBool(dataArray[4])
     auto_off = myBool(dataArray[5])
     always_on = myBool(dataArray[6])
-    
-    tama.session.add(tama.Client(name, ip, mac, users, state, auto_on, auto_off, always_on, count))
+
+    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     print "Client "+name+" added"
 
+def addclientFile(clientFile):
+    """
+    Add client from file, one client at line
+    
+    each line contains comma separeted values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    """
+    
+    for line in clientFile:
+        addclientString(line)
 
+def addclientInteractive():
+    """
+    Add a new client asking information from terminal
+    
+    """
+    name = raw_input("Name: ")
+    while(1):
+        try:
+            ip=validateIP(raw_input("IP: "))
+        except:
+            print "Please insert a valid IP address"
+        else:
+            break
+    while(1):
+        try:
+            mac=validateMAC(raw_input("MAC address: "))
+        except:
+            print "Please insert a valid MAC address"
+        else:
+            break
+    print "List of states by number:"
+    print "0: morto (manuale)"
+    print "1: spento, accensione remota non funzionante"
+    print "2: spento (non da tamaserver)"
+    print "3: spento da tamaserver"
+    print "4: non gestito da tamaserver"
+    print "5: acceso, tamaclient non funzionante"
+    print "7: acceso"
+    while(1):
+        try:
+            state = int(raw_input("Number of state: "))
+        except:
+            print "Please insert a integer"
+        else:
+            if state in [ 0, 1, 2 ,3 ,4, 5, 7]:
+                break
+            else:
+                print "Please insert a valid number"
+    while(1):
+        try:
+            auto_on=myBool(raw_input("Auto on (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            auto_off=myBool(raw_input("Auto off (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            always_on=myBool(raw_input("Always on (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            count=myBool(raw_input("Count (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    
+    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+
+def addclient(options):
+    """
+    Main function for the addclient option
+    
+    This function choose and call the right function between:
+    - addclientInteractive
+    - addclientFile
+    
+    """
+    if options.file is None:
+        addclientInteractive()
+    else:
+        addclientFile(options.file)
+        options.file.close()
 
 
 # Parser definitions
