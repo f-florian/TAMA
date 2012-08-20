@@ -47,7 +47,7 @@ import datetime
 import time
 import ConfigParser
 
-TAMA_CONFIG_FILE = "/etc/tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 _debug = 0
 #MAIN_DB_PATH = "main.db"

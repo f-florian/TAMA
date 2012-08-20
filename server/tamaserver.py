@@ -30,7 +30,7 @@ import sqlalchemy
 import sqlalchemy.orm
 import ConfigParser
 
-TAMA_CONFIG_FILE = "/etc/tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 #debug = 4
 #pid_file_path = "tamaserver.pid"

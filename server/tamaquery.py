@@ -32,7 +32,7 @@ import ConfigParser
 import argparse
 import sys
 
-TAMA_CONFIG_FILE = "tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 
 tama_config = ConfigParser.ConfigParser()
