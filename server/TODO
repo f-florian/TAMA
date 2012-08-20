@@ -1,0 +1,7 @@
+Add the "addclient" feature (this branch)
+
+Functions to write:
+- addclient
+- addclientInteractive
+- validateIP 
+- validateMAC
