@@ -276,6 +276,7 @@ def addclient_string(dataString):
     always_on = string_to_bool(dataArray[6])
 
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+    tama.session.commit()
     print "Client "+name+" added"
 
 def addclient_file(clientFile):
@@ -365,6 +366,7 @@ def addclient_interactive():
             break
     
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+    tama.session.commit()
 
 def addclient(options):
     """
