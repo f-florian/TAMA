@@ -297,6 +297,11 @@ def addclient_file(clientFile):
     """
     
     for line in clientFile:
+        if line.strip()=="":
+            continue
+        if line.startswith("#"):
+            print line.lstrip("#").strip()
+            continue
         addclient_string(line)
 
 def addclient_interactive():
