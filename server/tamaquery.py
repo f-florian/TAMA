@@ -221,7 +221,7 @@ def switchon(options):
             client.switch_on_simple()
     
 
-def myBool(string):
+def string_to_bool(string):
     """
     Convert a string (True/False) in a boolean value
     
@@ -234,7 +234,7 @@ def myBool(string):
     else:
         raise Exception ("Invalid bool string")
 
-def validateIP(string):
+def validate_ip(string):
     """
     Return string if string is a IP, else raise an exception
     
@@ -242,7 +242,7 @@ def validateIP(string):
     # TODO
     return string
 
-def validateMAC(string):
+def validate_mac(string):
     """
     Return string if string is a MAC address, else raise an exception
     
@@ -251,7 +251,7 @@ def validateMAC(string):
     return string
 
 
-def addclientString(dataString):
+def addclient_string(dataString):
     """
     Add a new client in the database taking data from a string
     
@@ -268,17 +268,17 @@ def addclientString(dataString):
     """
     dataArray = dataString.split(",")
     name = dataArray[0]
-    ip = validateIP(dataArray[1])
-    mac = validateMAC(dataArray[2])
+    ip = validate_ip(dataArray[1])
+    mac = validate_mac(dataArray[2])
     state = int(dataArray[3])
-    auto_on = myBool(dataArray[4])
-    auto_off = myBool(dataArray[5])
-    always_on = myBool(dataArray[6])
+    auto_on = string_to_bool(dataArray[4])
+    auto_off = string_to_bool(dataArray[5])
+    always_on = string_to_bool(dataArray[6])
 
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     print "Client "+name+" added"
 
-def addclientFile(clientFile):
+def addclient_file(clientFile):
     """
     Add client from file, one client at line
     
@@ -295,9 +295,9 @@ def addclientFile(clientFile):
     """
     
     for line in clientFile:
-        addclientString(line)
+        addclient_string(line)
 
-def addclientInteractive():
+def addclient_interactive():
     """
     Add a new client asking information from terminal
     
@@ -305,14 +305,14 @@ def addclientInteractive():
     name = raw_input("Name: ")
     while(1):
         try:
-            ip=validateIP(raw_input("IP: "))
+            ip=validate_ip(raw_input("IP: "))
         except:
             print "Please insert a valid IP address"
         else:
             break
     while(1):
         try:
-            mac=validateMAC(raw_input("MAC address: "))
+            mac=validate_mac(raw_input("MAC address: "))
         except:
             print "Please insert a valid MAC address"
         else:
@@ -337,28 +337,28 @@ def addclientInteractive():
                 print "Please insert a valid number"
     while(1):
         try:
-            auto_on=myBool(raw_input("Auto on (True/False): "))
+            auto_on=string_to_bool(raw_input("Auto on (True/False): "))
         except:
             print "Please insert a valid bool value"
         else:
             break
     while(1):
         try:
-            auto_off=myBool(raw_input("Auto off (True/False): "))
+            auto_off=string_to_bool(raw_input("Auto off (True/False): "))
         except:
             print "Please insert a valid bool value"
         else:
             break
     while(1):
         try:
-            always_on=myBool(raw_input("Always on (True/False): "))
+            always_on=string_to_bool(raw_input("Always on (True/False): "))
         except:
             print "Please insert a valid bool value"
         else:
             break
     while(1):
         try:
-            count=myBool(raw_input("Count (True/False): "))
+            count=string_to_bool(raw_input("Count (True/False): "))
         except:
             print "Please insert a valid bool value"
         else:
@@ -371,14 +371,14 @@ def addclient(options):
     Main function for the addclient option
     
     This function choose and call the right function between:
-    - addclientInteractive
-    - addclientFile
+    - addclient_interactive
+    - addclient_file
     
     """
     if options.file is None:
-        addclientInteractive()
+        addclient_interactive()
     else:
-        addclientFile(options.file)
+        addclient_file(options.file)
         options.file.close()
 
 
