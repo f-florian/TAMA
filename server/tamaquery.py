@@ -226,7 +226,7 @@ def string_to_bool(string):
     Convert a string (True/False) in a boolean value
     
     """
-    string = string.lower()
+    string = string.lower().strip()
     if string in [ "true", "1", "yes" ]:
         return True
     elif string in [ "false", "0", "no" ]:
