@@ -471,7 +471,7 @@ addclientParser.add_argument("--file", "-f",
 
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
-debug_message(4,"args: "+mainNS.args)
+debug_message(4,"args: "+str(mainNS.args))
 if mainNS.action=="listclient":
     listclientNS = listclientParser.parse_args(mainNS.args)
     listclient(listclientNS)
