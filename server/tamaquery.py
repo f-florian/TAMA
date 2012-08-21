@@ -192,6 +192,10 @@ def temperatures(options):
     
 
 def switchon(options):
+    """
+    Try to switch on one client
+    
+    """
     try:
         client = tama.session.query(tama.Client).\
                         filter(tama.Client.name==options.name).one()
@@ -217,6 +221,194 @@ def switchon(options):
             client.switch_on_simple()
     
 
+def string_to_bool(string):
+    """
+    Convert a string (True/False) in a boolean value
+    
+    """
+    string = string.lower().strip()
+    if string in [ "true", "1", "yes" ]:
+        return True
+    elif string in [ "false", "0", "no" ]:
+        return False
+    else:
+        raise Exception ("Invalid bool string")
+
+def validate_ip(string):
+    """
+    Return string if string is a IP, else raise an exception
+    
+    """
+    ip = string.split(".")
+    if len(ip)!=4:
+        raise Exception("Invalid IP")
+    for i in range(4):
+        try:
+            num = int(ip[i])
+        except:
+            raise Exception("Invalid IP")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid IP")
+    return string
+
+def validate_mac(string):
+    """
+    Return string if string is a MAC address, else raise an exception
+    
+    """
+    mac = string.split(":")
+    if len(mac)!=6:
+        raise Exception("Invalid MAC address")
+    for i in range(6):
+        try:
+            num = int(mac[i],16)
+        except:
+            raise Exception("Invalid MAC address")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid MAC address")
+    return string
+
+
+def addclient_string(dataString):
+    """
+    Add a new client in the database taking data from a string
+    
+    dataString contain comma separeted values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    """
+    dataArray = dataString.split(",")
+    name = dataArray[0]
+    ip = validate_ip(dataArray[1])
+    mac = validate_mac(dataArray[2])
+    state = int(dataArray[3])
+    auto_on = string_to_bool(dataArray[4])
+    auto_off = string_to_bool(dataArray[5])
+    always_on = string_to_bool(dataArray[6])
+    count = string_to_bool(dataArray[7])
+
+    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+    tama.session.commit()
+    print "Client "+name+" added"
+
+def addclient_file(clientFile):
+    """
+    Add client from file, one client at line
+    
+    each line contains comma separeted values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    """
+    
+    for line in clientFile:
+        if line.strip()=="":
+            continue
+        if line.startswith("#"):
+            print line.lstrip("#").strip()
+            continue
+        addclient_string(line)
+
+def addclient_interactive():
+    """
+    Add a new client asking information from terminal
+    
+    """
+    name = raw_input("Name: ")
+    while(1):
+        try:
+            ip=validate_ip(raw_input("IP: "))
+        except:
+            print "Please insert a valid IP address"
+        else:
+            break
+    while(1):
+        try:
+            mac=validate_mac(raw_input("MAC address: "))
+        except:
+            print "Please insert a valid MAC address"
+        else:
+            break
+    print "List of states by number:"
+    print "0: morto (manuale)"
+    print "1: spento, accensione remota non funzionante"
+    print "2: spento (non da tamaserver)"
+    print "3: spento da tamaserver"
+    print "4: non gestito da tamaserver"
+    print "5: acceso, tamaclient non funzionante"
+    print "7: acceso"
+    while(1):
+        try:
+            state = int(raw_input("Number of state: "))
+        except:
+            print "Please insert a integer"
+        else:
+            if state in [ 0, 1, 2 ,3 ,4, 5, 7]:
+                break
+            else:
+                print "Please insert a valid number"
+    while(1):
+        try:
+            auto_on=string_to_bool(raw_input("Auto on (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            auto_off=string_to_bool(raw_input("Auto off (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            always_on=string_to_bool(raw_input("Always on (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    while(1):
+        try:
+            count=string_to_bool(raw_input("Count (True/False): "))
+        except:
+            print "Please insert a valid bool value"
+        else:
+            break
+    
+    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+    tama.session.commit()
+
+def addclient(options):
+    """
+    Main function for the addclient option
+    
+    This function choose and call the right function between:
+    - addclient_interactive
+    - addclient_file
+    
+    """
+    if options.file is None:
+        addclient_interactive()
+    else:
+        addclient_file(options.file)
+        options.file.close()
+
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
@@ -227,6 +419,7 @@ mainParser.add_argument("action",
                                     "temperatures",
                                     "switchon",
                                   #  "switchoff",
+                                    "addclient",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -297,6 +490,13 @@ switchonParser.add_argument("--force","-f",
                             help="Force to switch on the client",
                             action="store_true")
 
+addclientParser = argparse.ArgumentParser(description="Add a new client in the database",
+                                          prog = sys.argv[0]+" addclient")
+addclientParser.add_argument("--file", "-f",
+                             help="Load client data from file (one client for line)",
+                             type=argparse.FileType('r')
+                            )
+
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
 debug_message(4,"args: "+str(mainNS.args))
@@ -315,4 +515,8 @@ elif mainNS.action=="temperatures":
 elif mainNS.action=="switchon":
     switchonNS = switchonParser.parse_args(mainNS.args)
     switchon(switchonNS)
+elif mainNS.action=="addclient":
+    addclientNS = addclientParser.parse_args(mainNS.args)
+    addclient(addclientNS)
+
 

@@ -142,11 +142,15 @@ class Client(Base):
     """The last time that the client was see offline"""
     
     
-    def __init__ (self, name, ip, mac, users, state, auto_on, auto_off, always_on, count):
+    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count):
+
         self.name = name
         self.ip = ip
         self.mac = mac
-        self.users = users
+        if state < 4:
+            self.users = -2
+        else:
+            self.users = -1
         self.state = state
         self.auto_on = auto_on
         self.auto_off = auto_off
