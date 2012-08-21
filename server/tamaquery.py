@@ -274,6 +274,7 @@ def addclient_string(dataString):
     auto_on = string_to_bool(dataArray[4])
     auto_off = string_to_bool(dataArray[5])
     always_on = string_to_bool(dataArray[6])
+    count = string_to_bool(dataArray[7])
 
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     tama.session.commit()
