@@ -48,12 +48,12 @@ except:
 try:
     import tamascommon as tama
 except:
-    print "[tamaserver] error while importing tamascommon"
+    print "[tamaquery] error while importing tamascommon"
     exit(2)
 
 def debug_message (level, msg):
     if level <=debug:
-        print "[Tamaserver - debug] "+str(msg)
+        print "[Tamaquery - debug] "+str(msg)
     
 
 def listclient(options):
@@ -470,8 +470,8 @@ addclientParser.add_argument("--file", "-f",
                             )
 
 mainNS = mainParser.parse_args()
-print mainNS.action
-print mainNS.args
+debug_message(4,"action: "+mainNS.action)
+debug_message(4,"args: "+mainNS.args)
 if mainNS.action=="listclient":
     listclientNS = listclientParser.parse_args(mainNS.args)
     listclient(listclientNS)
