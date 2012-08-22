@@ -544,6 +544,8 @@ def edit(options):
         client.always_on = get_bool("Always on",client.always_on)
     if options.all or options.count:
         client.count = get_bool("Count",client.count)
+    
+    tama.session.commit()
 
 
 # Parser definitions
