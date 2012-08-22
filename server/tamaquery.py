@@ -349,7 +349,7 @@ def get_ip(default=None):
     while(1):
         ip = raw_input("IP: "+request).strip()
         if default is not None and ip == "":
-            ip == default
+            ip = default
         try:
             validate_ip(ip)
         except:
@@ -380,7 +380,7 @@ def get_mac(default=None):
     while(1):
         mac = raw_input("MAC address: "+request).strip()
         if default is not None and mac == "":
-            mac == default
+            mac = default
         try:
             validate_mac(mac)
         except:
@@ -407,7 +407,7 @@ def get_state(default=None):
             default = None
             request = ""
         else:
-            request = "("+default+") "
+            request = "("+str(default)+") "
     print "List of valid states by number:"
     print "0: morto (manuale)"
     print "1: spento, accensione remota non funzionante"
