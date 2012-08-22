@@ -547,6 +547,89 @@ def edit(options):
     
     tama.session.commit()
 
+def edit_array(client,dataArray):
+    """
+    Edit client using dataArray
+    
+    dataArray contains strings separated values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    """
+    client.name = dataArray[0]
+    client.ip = validate_ip(dataArray[1])
+    client.mac = validate_mac(dataArray[2])
+    client.state = int(dataArray[3])
+    client.auto_on = string_to_bool(dataArray[4])
+    client.auto_off = string_to_bool(dataArray[5])
+    client.always_on = string_to_bool(dataArray[6])
+    client.count = string_to_bool(dataArray[7])
+    tama.session.commit()
+
+def editfile(options):
+    """
+    Main function for the editfile option
+    
+    This function read the file and edit the database
+    
+    Every line of file contains ALL data about one client
+    as comma separated values in this order:
+    - name
+    - ip
+    - mac
+    - state (Number)
+    - auto_on (True/False)
+    - auto_off (True/False)
+    - always_on (True/Flase)
+    - count (True/False)
+    
+    The client named name will be edit
+    If no client named name is found and option all is
+    given then this client will be added
+    
+    """
+    for line in options.file:
+        if line.strip()=="":
+            continue
+        elif line.startswith("#"):
+            print line.lstrip("#").strip()
+            continue
+        dataArray=line.split(",")
+        try:
+            client = tama.session.query(tama.Client).filter(tama.Client.name==dataArray[0]).one()
+        except:
+            if options.add:
+                print "I will add client "+dataArray[0]+"as a new client"
+                try:
+                    addclient_string(line)
+                except:
+                    print "Error while adding client "+dataArray[0]
+                    if not options.override:
+                        print "Aborting!"
+                        sys.exit(2)
+                else:
+                    print "Client "+dataArray[0]+" added"
+            else:
+                print "Client "+dataArray[0]+"not found in database"
+                if not options.override:
+                    print "Aborting!"
+                    sys.exit(2)
+        else:
+            try:
+                edit_array(clint,dataArray)
+            except:
+                print "Error while editing client "+dataArray[0]
+                if not options.override:
+                    print "Aborting!"
+                    sys.exit(2)
+            
+
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
@@ -671,6 +754,21 @@ editParserTargetGroup.add_argument("--count",
                                    help="edit count",
                                    action="store_true")
 
+editfileParser = argparse.ArgumentParser(description="Edit the informations\
+                                         about the client from a file and\
+                                         edit the database (the file must\
+                                         contain comma separated values)",
+                                         prog=sys.argv[0]+" editfile")
+editfileParser.add_argument("file",
+                            help="The file to read",
+                            type=argparse.FileType('r')
+                            )
+editfileParser.add_argument("--add",
+                            help="If the client are not present then add it"
+                            action="store_true")
+editfileParser.add_argument("--override","-o",
+                            help="Do not abort in case of error in file"
+                            action="store_true")
 
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
