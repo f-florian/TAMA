@@ -645,28 +645,28 @@ editParserTargetGroup.add_argument("--all",
                                    help="edit all informations"
                                    action="store_true")
 editParserTargetGroup.add_argument("--name",
-                                   help="edit name"
+                                   help="edit name",
                                    action="store_true")
 editParserTargetGroup.add_argument("--ip",
-                                   help="edit IP address"
+                                   help="edit IP address",
                                    action="store_true")
 editParserTargetGroup.add_argument("--mac",
-                                   help="edit MAC address"
+                                   help="edit MAC address",
                                    action="store_true")
 editParserTargetGroup.add_argument("--state",
-                                   help="edit state"
+                                   help="edit state",
                                    action="store_true")
 editParserTargetGroup.add_argument("--auto_on",
-                                   help="edit auto on"
+                                   help="edit auto on",
                                    action="store_true")
 editParserTargetGroup.add_argument("--auto_off",
-                                   help="edit auto off"
+                                   help="edit auto off",
                                    action="store_true")
 editParserTargetGroup.add_argument("--always_on",
-                                   help="edit always on"
+                                   help="edit always on",
                                    action="store_true")
 editParserTargetGroup.add_argument("--count",
-                                   help="edit count"
+                                   help="edit count",
                                    action="store_true")
 
 
