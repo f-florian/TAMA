@@ -642,7 +642,7 @@ editParser.add_argument("name",
                         help="The name of the client to edit")
 editParserTargetGroup = editParser.add_mutually_exclusive_group()
 editParserTargetGroup.add_argument("--all",
-                                   help="edit all informations"
+                                   help="edit all informations",
                                    action="store_true")
 editParserTargetGroup.add_argument("--name",
                                    help="edit name",
