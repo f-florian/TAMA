@@ -270,6 +270,166 @@ def validate_mac(string):
                 raise Exception("Invalid MAC address")
     return string
 
+def get_bool(description="Insert a boolean value",default=None):
+    """
+    Get a boolean value asking for description
+    
+    If default is given and the user insert nothing then default is returned
+    If user give an invalid bool then the funciton will ask again for a bool
+    
+    """
+    if default is None:
+        request = ""
+    elif default not in [ True, False ]:
+        try:
+            defaultB = string_to_bool(default)
+        except:
+            debug_message(2,"get_bool: invalid default argument, not boolean!")
+            default = None
+            request = ""
+        else:
+            request = "("+default+") "
+    else:
+        default = str(default)
+    while(1):
+        sting = raw_input(description+""+request)
+        if default is not None and string == "":
+            string = default
+        try:
+            bool = string_to_bool(string)
+        except:
+            print "Please insert a valid boolean value"
+        else:
+            break
+    return bool
+
+def get_name(default=None):
+    """
+    Get the name of a client
+
+    If default is given and the user insert no name then default is retured
+    Else it will ask again for the client name
+
+    """
+    if default is None:
+        request = ""
+    else:
+        request = "("+default+") "
+    while(1):
+        name = raw_input("Name: "+request).strip()
+        if default is not None:
+            if name == "":
+                name = default
+        if name != "":
+            break
+        else:
+            print "Please insert a name"
+    return name
+
+def get_ip(default=None):
+    """
+    Get an IP address
+    
+    If default is given and the user insert nothing then default is returned
+    If user give an invalid IP then the funciton will ask again for a IP
+    
+    """
+    if default is None:
+        request = ""
+    else:
+        try:
+            validate_ip(default)
+        except:
+            debug_message(2,"get_ip: invalid ip as argument")
+            default = None
+            request = ""
+        else:
+            request = "("+default+") "
+    while(1):
+        ip = raw_input("IP: "+request).strip()
+        if default is not None and ip == "":
+            ip == default
+        try:
+            validate_ip(ip)
+        except:
+            print "Please insert a valid IP address"
+        else:
+            break
+    return ip
+
+def get_mac(default=None):
+    """
+    Get an MAC address
+    
+    If default is given and the user insert nothing then default is returned
+    If user give an invalid MAC then the funciton will ask again for a MAC
+    
+    """
+    if default is None:
+        request = ""
+    else:
+        try:
+            validate_mac(default)
+        except:
+            debug_message(2,"get_mac: invalid mac as argument")
+            default = None
+            request = ""
+        else:
+            request = "("+default+") "
+    while(1):
+        mac = raw_input("MAC address: "+request).strip()
+        if default is not None and mac == "":
+            mac == default
+        try:
+            validate_mac(mac)
+        except:
+            print "Please insert a valid MAC address"
+        else:
+            break
+    return mac
+
+def get_state(default=None):
+    """
+    Get a state
+    
+    If default is given and the user insert nothing then default is returned
+    If user give an invalid state then the funciton will ask again for a state
+    
+    """
+    if default is None:
+        request = ""
+    else:
+        try:
+            defaultN = int(default)
+        except:
+            debug_message(2,"get_state: invalid state as argument")
+            default = None
+            request = ""
+        else:
+            request = "("+default+") "
+    print "List of valid states by number:"
+    print "0: morto (manuale)"
+    print "1: spento, accensione remota non funzionante"
+    print "2: spento (non da tamaserver)"
+    print "3: spento da tamaserver"
+    print "4: non gestito da tamaserver"
+    print "5: acceso, tamaclient non funzionante"
+    print "7: acceso"
+    while (1):
+        state = raw_input("State number "+request).strip()
+        if default is not None and state=="":
+            state = default
+        try:
+            stateN = int(state)
+        except:
+            print "Please insert an integer"
+        else:
+            if stateN in [ 0, 1, 2 ,3 ,4, 5, 7]:
+                break
+            else:
+                print "Please insert a valid numeber"
+    return stateN
+
 
 def addclient_string(dataString):
     """
@@ -329,67 +489,14 @@ def addclient_interactive():
     Add a new client asking information from terminal
     
     """
-    name = raw_input("Name: ")
-    while(1):
-        try:
-            ip=validate_ip(raw_input("IP: "))
-        except:
-            print "Please insert a valid IP address"
-        else:
-            break
-    while(1):
-        try:
-            mac=validate_mac(raw_input("MAC address: "))
-        except:
-            print "Please insert a valid MAC address"
-        else:
-            break
-    print "List of states by number:"
-    print "0: morto (manuale)"
-    print "1: spento, accensione remota non funzionante"
-    print "2: spento (non da tamaserver)"
-    print "3: spento da tamaserver"
-    print "4: non gestito da tamaserver"
-    print "5: acceso, tamaclient non funzionante"
-    print "7: acceso"
-    while(1):
-        try:
-            state = int(raw_input("Number of state: "))
-        except:
-            print "Please insert a integer"
-        else:
-            if state in [ 0, 1, 2 ,3 ,4, 5, 7]:
-                break
-            else:
-                print "Please insert a valid number"
-    while(1):
-        try:
-            auto_on=string_to_bool(raw_input("Auto on (True/False): "))
-        except:
-            print "Please insert a valid bool value"
-        else:
-            break
-    while(1):
-        try:
-            auto_off=string_to_bool(raw_input("Auto off (True/False): "))
-        except:
-            print "Please insert a valid bool value"
-        else:
-            break
-    while(1):
-        try:
-            always_on=string_to_bool(raw_input("Always on (True/False): "))
-        except:
-            print "Please insert a valid bool value"
-        else:
-            break
-    while(1):
-        try:
-            count=string_to_bool(raw_input("Count (True/False): "))
-        except:
-            print "Please insert a valid bool value"
-        else:
-            break
+    name = get_name()
+    ip = get_ip()
+    mac = get_mac()
+    state = get_state()
+    auto_on = get_bool("Auto on",True)
+    auto_off = get_bool("Auto off",True)
+    always_on = get_bool("Always on",False)
+    count = get_bool("Count",True)
     
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     tama.session.commit()
