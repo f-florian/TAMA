@@ -291,6 +291,7 @@ def get_bool(description="Insert a boolean value",default=None):
             request = "("+default+") "
     else:
         default = str(default)
+        request = "("+default+") "
     while(1):
         sting = raw_input(description+""+request)
         if default is not None and string == "":
