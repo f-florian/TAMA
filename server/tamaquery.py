@@ -517,17 +517,47 @@ def addclient(options):
         addclient_file(options.file)
         options.file.close()
 
+def edit(options):
+    """
+    Main function for the edit option
+    
+    This function search the client and ask for new values
+    
+    """
+    client = tama.query_name(options.name)
+    if client is None:
+        print "Client "+options.name+" non found in the main database"
+        return
+    if options.all or options.name:
+        client.name = get_name(client.name)
+    if options.all or options.ip:
+        client.ip = get_ip(client.ip)
+    if options.all or options.mac:
+        client.mac = get_mac(client.mac)
+    if options.all or options.state:
+        client.state = get_state(client.state)
+    if options.all or options.auto_on:
+        client.auto_on = get_bool("Auto on",client.auto_on)
+    if options.all or options.auto_off:
+        client.auto_off = get_bool("Auto off",client.auto_off)
+    if options.all or options.always_on:
+        client.always_on = get_bool("Always on",client.always_on)
+    if options.all or options.count:
+        client.count = get_bool("Count",client.count)
+
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
 mainParser.add_argument("action",
                         choices=["listclient",
-                                    "examine",
-                                    "refresh",
-                                    "temperatures",
-                                    "switchon",
-                                  #  "switchoff",
-                                    "addclient",
+                                 "examine",
+                                 "refresh",
+                                 "temperatures",
+                                 "switchon",
+                                 #  "switchoff",
+                                 "addclient",
+                                 "edit",
+                                 "editfile",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -605,6 +635,41 @@ addclientParser.add_argument("--file", "-f",
                              type=argparse.FileType('r')
                             )
 
+editParser = argparse.ArgumentParser(description="Edit infromations\
+                                     about one client",
+                                     prog=sys.argv[0]+" edit")
+editParser.add_argument("name",
+                        help="The name of the client to edit")
+editParserTargetGroup = editParser.add_mutually_exclusive_group()
+editParserTargetGroup.add_argument("--all",
+                                   help="edit all informations"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--name",
+                                   help="edit name"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--ip",
+                                   help="edit IP address"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--mac",
+                                   help="edit MAC address"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--state",
+                                   help="edit state"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--auto_on",
+                                   help="edit auto on"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--auto_off",
+                                   help="edit auto off"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--always_on",
+                                   help="edit always on"
+                                   action="store_true")
+editParserTargetGroup.add_argument("--count",
+                                   help="edit count"
+                                   action="store_true")
+
+
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
 debug_message(4,"args: "+str(mainNS.args))
@@ -626,5 +691,10 @@ elif mainNS.action=="switchon":
 elif mainNS.action=="addclient":
     addclientNS = addclientParser.parse_args(mainNS.args)
     addclient(addclientNS)
-
+elif mainNS.action=="edit":
+    editNS = editParser.parse_args(mainNS.args)
+    edit(editNS)
+elif mainNS.action=="editfile":
+    editfileNS = editfileParser.parse_args(mainNS.args)
+    editfile(editfileNS)
 
