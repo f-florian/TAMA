@@ -616,7 +616,7 @@ def editfile(options):
                 else:
                     print "Client "+dataArray[0]+" added"
             else:
-                print "Client "+dataArray[0]+"not found in database"
+                print "Client "+dataArray[0]+" not found in database"
                 if not options.override:
                     print "Aborting!"
                     sys.exit(2)
@@ -763,7 +763,7 @@ editfileParser.add_argument("file",
                             help="The file to read",
                             type=argparse.FileType('r')
                             )
-editfileParser.add_argument("--add",
+editfileParser.add_argument("--add","-a",
                             help="If the client are not present then add it",
                             action="store_true")
 editfileParser.add_argument("--override","-o",
