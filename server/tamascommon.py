@@ -488,6 +488,58 @@ def refresh_data():
         client.refresh()
         
     session.commit()
+
+# Funzioni per convalidare o convertire le stringhe
+
+def string_to_bool(string):
+    """
+    Convert a string (True/False) in a boolean value
+    
+    """
+    string = string.lower().strip()
+    if string in [ "true", "1", "yes", "y", "t" ]:
+        return True
+    elif string in [ "false", "0", "no", "n", "f" ]:
+        return False
+    else:
+        raise Exception ("Invalid bool string")
+
+def validate_ip(string):
+    """
+    Return string if string is a IP, else raise an exception
+    
+    """
+    ip = string.split(".")
+    if len(ip)!=4:
+        raise Exception("Invalid IP")
+    for i in range(4):
+        try:
+            num = int(ip[i])
+        except:
+            raise Exception("Invalid IP")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid IP")
+    return string
+
+def validate_mac(string):
+    """
+    Return string if string is a MAC address, else raise an exception
+    
+    """
+    mac = string.split(":")
+    if len(mac)!=6:
+        raise Exception("Invalid MAC address")
+    for i in range(6):
+        try:
+            num = int(mac[i],16)
+        except:
+            raise Exception("Invalid MAC address")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid MAC address")
+    return string
+
     
 
 # Funzioni stupide

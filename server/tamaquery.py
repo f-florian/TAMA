@@ -220,56 +220,6 @@ def switchon(options):
         else:
             client.switch_on_simple()
     
-
-def string_to_bool(string):
-    """
-    Convert a string (True/False) in a boolean value
-    
-    """
-    string = string.lower().strip()
-    if string in [ "true", "1", "yes" ]:
-        return True
-    elif string in [ "false", "0", "no" ]:
-        return False
-    else:
-        raise Exception ("Invalid bool string")
-
-def validate_ip(string):
-    """
-    Return string if string is a IP, else raise an exception
-    
-    """
-    ip = string.split(".")
-    if len(ip)!=4:
-        raise Exception("Invalid IP")
-    for i in range(4):
-        try:
-            num = int(ip[i])
-        except:
-            raise Exception("Invalid IP")
-        else:
-            if num<0 or num>255:
-                raise Exception("Invalid IP")
-    return string
-
-def validate_mac(string):
-    """
-    Return string if string is a MAC address, else raise an exception
-    
-    """
-    mac = string.split(":")
-    if len(mac)!=6:
-        raise Exception("Invalid MAC address")
-    for i in range(6):
-        try:
-            num = int(mac[i],16)
-        except:
-            raise Exception("Invalid MAC address")
-        else:
-            if num<0 or num>255:
-                raise Exception("Invalid MAC address")
-    return string
-
 def get_bool(description="Insert a boolean value",default=None):
     """
     Get a boolean value asking for description
@@ -282,7 +232,7 @@ def get_bool(description="Insert a boolean value",default=None):
         request = ""
     elif default not in [ True, False ]:
         try:
-            defaultB = string_to_bool(default)
+            defaultB = tama.string_to_bool(default)
         except:
             debug_message(2,"get_bool: invalid default argument, not boolean!")
             default = None
@@ -297,7 +247,7 @@ def get_bool(description="Insert a boolean value",default=None):
         if default is not None and string == "":
             string = default
         try:
-            bool = string_to_bool(string)
+            bool = tama.string_to_bool(string)
         except:
             print "Please insert a valid boolean value"
         else:
@@ -339,7 +289,7 @@ def get_ip(default=None):
         request = ""
     else:
         try:
-            validate_ip(default)
+            tama.validate_ip(default)
         except:
             debug_message(2,"get_ip: invalid ip as argument")
             default = None
@@ -351,7 +301,7 @@ def get_ip(default=None):
         if default is not None and ip == "":
             ip = default
         try:
-            validate_ip(ip)
+            tama.validate_ip(ip)
         except:
             print "Please insert a valid IP address"
         else:
@@ -370,7 +320,7 @@ def get_mac(default=None):
         request = ""
     else:
         try:
-            validate_mac(default)
+            tama.validate_mac(default)
         except:
             debug_message(2,"get_mac: invalid mac as argument")
             default = None
@@ -382,7 +332,7 @@ def get_mac(default=None):
         if default is not None and mac == "":
             mac = default
         try:
-            validate_mac(mac)
+            tama.validate_mac(mac)
         except:
             print "Please insert a valid MAC address"
         else:
@@ -449,13 +399,13 @@ def add_string(dataString):
     """
     dataArray = dataString.split(",")
     name = dataArray[0]
-    ip = validate_ip(dataArray[1])
-    mac = validate_mac(dataArray[2])
+    ip = tama.validate_ip(dataArray[1])
+    mac = tama.validate_mac(dataArray[2])
     state = int(dataArray[3])
-    auto_on = string_to_bool(dataArray[4])
-    auto_off = string_to_bool(dataArray[5])
-    always_on = string_to_bool(dataArray[6])
-    count = string_to_bool(dataArray[7])
+    auto_on = tama.string_to_bool(dataArray[4])
+    auto_off = tama.string_to_bool(dataArray[5])
+    always_on = tama.string_to_bool(dataArray[6])
+    count = tama.string_to_bool(dataArray[7])
 
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     tama.session.commit()
@@ -563,13 +513,13 @@ def edit_array(client,dataArray):
     
     """
     client.name = dataArray[0]
-    client.ip = validate_ip(dataArray[1])
-    client.mac = validate_mac(dataArray[2])
+    client.ip = tama.validate_ip(dataArray[1])
+    client.mac = tama.validate_mac(dataArray[2])
     client.state = int(dataArray[3])
-    client.auto_on = string_to_bool(dataArray[4])
-    client.auto_off = string_to_bool(dataArray[5])
-    client.always_on = string_to_bool(dataArray[6])
-    client.count = string_to_bool(dataArray[7])
+    client.auto_on = tama.string_to_bool(dataArray[4])
+    client.auto_off = tama.string_to_bool(dataArray[5])
+    client.always_on = tama.string_to_bool(dataArray[6])
+    client.count = tama.string_to_bool(dataArray[7])
     tama.session.commit()
 
 def editfile(options):
