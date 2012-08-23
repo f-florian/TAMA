@@ -608,8 +608,8 @@ def editfile(options):
                 print "I will add client "+dataArray[0]+"as a new client"
                 try:
                     addclient_string(line)
-                except:
-                    print "Error while adding client "+dataArray[0]
+                except Exception, e:
+                    print "Error \""+str(e)+"\" while adding client "+dataArray[0]
                     if not options.override:
                         print "Aborting!"
                         sys.exit(2)
@@ -622,9 +622,9 @@ def editfile(options):
                     sys.exit(2)
         else:
             try:
-                edit_array(clint,dataArray)
-            except:
-                print "Error while editing client "+dataArray[0]
+                edit_array(client,dataArray)
+            except Exception, e:
+                print "Error \""+str(e)+"\" while editing client "+dataArray[0]
                 if not options.override:
                     print "Aborting!"
                     sys.exit(2)
