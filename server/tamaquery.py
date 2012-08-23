@@ -432,7 +432,7 @@ def get_state(default=None):
     return stateN
 
 
-def addclient_string(dataString):
+def add_string(dataString):
     """
     Add a new client in the database taking data from a string
     
@@ -461,7 +461,7 @@ def addclient_string(dataString):
     tama.session.commit()
     print "Client "+name+" added"
 
-def addclient_file(clientFile):
+def add_file(clientFile):
     """
     Add client from file, one client at line
     
@@ -483,9 +483,9 @@ def addclient_file(clientFile):
         if line.startswith("#"):
             print line.lstrip("#").strip()
             continue
-        addclient_string(line)
+        add_string(line)
 
-def addclient_interactive():
+def add_interactive():
     """
     Add a new client asking information from terminal
     
@@ -502,19 +502,19 @@ def addclient_interactive():
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     tama.session.commit()
 
-def addclient(options):
+def add(options):
     """
-    Main function for the addclient option
+    Main function for the add option
     
     This function choose and call the right function between:
-    - addclient_interactive
-    - addclient_file
+    - add_interactive
+    - add_file
     
     """
     if options.file is None:
-        addclient_interactive()
+        add_interactive()
     else:
-        addclient_file(options.file)
+        add_file(options.file)
         options.file.close()
 
 def edit(options):
@@ -607,7 +607,7 @@ def editfile(options):
             if options.add:
                 print "I will add client "+dataArray[0]+"as a new client"
                 try:
-                    addclient_string(line)
+                    add_string(line)
                 except Exception, e:
                     print "Error \""+str(e)+"\" while adding client "+dataArray[0]
                     if not options.override:
@@ -640,7 +640,7 @@ mainParser.add_argument("action",
                                  "temperatures",
                                  "switchon",
                                  #  "switchoff",
-                                 "addclient",
+                                 "add",
                                  "edit",
                                  "editfile",
                                     ],
@@ -717,9 +717,9 @@ switchonParser.add_argument("--force","-f",
                             help="Force to switch on the client",
                             action="store_true")
 
-addclientParser = argparse.ArgumentParser(description="Add a new client in the database",
-                                          prog = sys.argv[0]+" addclient")
-addclientParser.add_argument("--file", "-f",
+addParser = argparse.ArgumentParser(description="Add a new client in the database",
+                                          prog = sys.argv[0]+" add")
+addParser.add_argument("--file", "-f",
                              help="Load client data from file (one client for line)",
                              type=argparse.FileType('r')
                             )
@@ -792,9 +792,9 @@ elif mainNS.action=="temperatures":
 elif mainNS.action=="switchon":
     switchonNS = switchonParser.parse_args(mainNS.args)
     switchon(switchonNS)
-elif mainNS.action=="addclient":
-    addclientNS = addclientParser.parse_args(mainNS.args)
-    addclient(addclientNS)
+elif mainNS.action=="add":
+    addNS = addParser.parse_args(mainNS.args)
+    add(addNS)
 elif mainNS.action=="edit":
     editNS = editParser.parse_args(mainNS.args)
     edit(editNS)
