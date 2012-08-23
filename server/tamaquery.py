@@ -833,4 +833,4 @@ elif mainNS.action=="editfile":
     editfile(editfileNS)
 elif mainNS.action=="delete":
     deleteNS = deleteParser.parse_args(mainNS.args)
-    delete(options)
+    delete(deleteNS)
