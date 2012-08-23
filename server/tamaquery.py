@@ -634,7 +634,7 @@ def editfile(options):
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
 mainParser.add_argument("action",
-                        choices=["listclient",
+                        choices=["list",
                                  "examine",
                                  "refresh",
                                  "temperatures",
