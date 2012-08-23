@@ -629,7 +629,27 @@ def editfile(options):
                     print "Aborting!"
                     sys.exit(2)
             
-
+def delete(options):
+    """
+    Main function for the delete option
+    
+    This function search and delete from the database the only client named
+    options.name
+    If options.force is given then it will delete all client named options.name
+    
+    """
+    count = tama.session.query(tama.Client).\
+            filter(tama.Client.name==options.name).count()
+    debug_message(2,str(count)+" clients found")
+    if count == 0:
+        print "Client "+option.name+" not found in database"
+    elif count == 1 or options.force:
+        for client in tama.session.query(tama.Client).\
+            filter(tama.Client.name==options.name):
+        client.delete()
+    else:
+        print "More that one client detected!"
+        print "If you want to delete them all give the force option"
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
@@ -643,6 +663,7 @@ mainParser.add_argument("action",
                                  "add",
                                  "edit",
                                  "editfile",
+                                 "delete",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -774,6 +795,15 @@ editfileParser.add_argument("--override","-o",
                             help="Do not abort in case of error in file",
                             action="store_true")
 
+deleteParser = argparse.ArgumentParser(description="Delete a client from\
+                                    database",
+                                    prog=sys.argv[0]+" delete")
+deleteParser.add_argument("name",
+                       help="The name of the client to delete")
+deleteParser.add_argument("--force","-f",
+                       action="store_true")
+                       
+
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
 debug_message(4,"args: "+str(mainNS.args))
@@ -801,4 +831,6 @@ elif mainNS.action=="edit":
 elif mainNS.action=="editfile":
     editfileNS = editfileParser.parse_args(mainNS.args)
     editfile(editfileNS)
-
+elif mainNS.action=="delete":
+    deleteNS = deleteParser.parse_args(mainNS.args)
+    delete(options)
