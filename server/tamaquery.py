@@ -646,7 +646,7 @@ def delete(options):
     elif count == 1 or options.force:
         for client in tama.session.query(tama.Client).\
             filter(tama.Client.name==options.name):
-        client.delete()
+            client.delete()
     else:
         print "More that one client detected!"
         print "If you want to delete them all give the force option"
