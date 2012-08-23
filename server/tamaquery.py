@@ -42,7 +42,7 @@ try:
     #tama_dir = tama_config.get("default","tama_dir")
 
 except:
-    print "[tamaquery] error while parsing "+free_policy_file
+    print "[tamaquery] error while parsing "+TAMA_CONFIG_FILE
     print "[tamaquery] exiting..."
 
 try:
