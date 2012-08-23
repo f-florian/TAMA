@@ -66,7 +66,7 @@ def list(options):
     
     out=""
     out2=""
-    if options.id:
+    if options.id or options.all:
         out += "%3s|" %("id")
         out2 += "%3s|" %("")
         
