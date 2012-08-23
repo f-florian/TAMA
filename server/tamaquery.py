@@ -652,7 +652,7 @@ mainParser.add_argument("args",
 listParser = argparse.ArgumentParser(description="List information\
                                     about all clients",
                                     prog=sys.argv[0]+" list")
-listParser,add_argument("--all","-a",
+listParser.add_argument("--all","-a",
                         help="Print id, ip, mac, ip, users and state\
                         for all client",
                         action="store_true")
