@@ -19,7 +19,7 @@
 # You should have received a copy of the GNU General Public License
 # along with tama. If not, see <http://www.gnu.org/licenses/>.
 
-import argparser
+import argparse
 import sys
 import ConfigParser
 
@@ -60,7 +60,7 @@ parser.add_argument("--dsh",
                     help="Generate dsh files",
                     action="store_true")
 parser.add_argument("--hosts",
-                    help="Generate hosts file"
+                    help="Generate hosts file",
                     action="store_true")
 # parser.add_argument("--yes","-y",
 #                     help="Do not ask confirmation before writing etc files",
