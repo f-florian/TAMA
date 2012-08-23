@@ -56,7 +56,7 @@ def debug_message (level, msg):
         print "[Tamaquery - debug] "+str(msg)
     
 
-def listclient(options):
+def list(options):
     """
     List information about all clients
     
@@ -72,16 +72,16 @@ def listclient(options):
         
     out += "%-16s" % ("Name")
     out2 += "%-16s" % ("")
-    if options.ip:
+    if options.ip or options.all:
         out += "|%-16s" % ("IP")
         out2 += "|%-16s" % ("")
-    if options.mac:
+    if options.mac or options.all:
         out += "|%-18s" % ("mac")
         out2 += "|%-18s" % ("")
-    if options.users:
+    if options.users or options.all:
         out += "|%-6s" % ("Users")
         out2 += "|%-6s" % ("")
-    if options.state:
+    if options.state or options.all:
         out += "|%-50s" % ("Client state")
         out2 += "|%-50s" % ("")
     print out
@@ -89,18 +89,18 @@ def listclient(options):
     
     for client in clients:
         out=""
-        if options.id:
+        if options.id or options.all:
             out += "%3d|" %(client.id)
         out += "%-16s" % (client.name)
-        if options.ip:
+        if options.ip or options.all:
             out+="|%-16s" % (client.ip)
-        if options.mac:
+        if options.mac or options.all:
             out+="|%-18s" % (client.mac)
         
         
-        if options.users:
+        if options.users or options.all:
             out+= "|%-6d" % (client.users_human())
-        if options.state:
+        if options.state or options.all:
             out+= "|%-40s" % (client.str_state())
         
         print out
@@ -534,22 +534,26 @@ mainParser.add_argument("args",
                         nargs=argparse.REMAINDER,
                         help="Arguments for the action")
 
-listclientParser = argparse.ArgumentParser(description="List information\
+listParser = argparse.ArgumentParser(description="List information\
                                     about all clients",
-                                    prog=sys.argv[0]+" listclient")
-listclientParser.add_argument("--state", 
+                                    prog=sys.argv[0]+" list")
+listParser,add_argument("--all","-a",
+                        help="Print id, ip, mac, ip, users and state\
+                        for all client",
+                        action="store_true")
+listParser.add_argument("--state", 
                             help="Print the state of clients",
                             action="store_true")
-listclientParser.add_argument("--users",
+listParser.add_argument("--users",
                             help="Print the number of user for client",
                             action="store_true")
-listclientParser.add_argument("--ip",
+listParser.add_argument("--ip",
                             help="Print the ip address of the client",
                             action="store_true")
-listclientParser.add_argument("--mac",
+listParser.add_argument("--mac",
                             help="Print the mac address of the client",
                             action="store_true")
-listclientParser.add_argument("--id",
+listParser.add_argument("--id",
                             help="Print the id of the client",
                             action="store_true")
 
@@ -608,9 +612,9 @@ addclientParser.add_argument("--file", "-f",
 mainNS = mainParser.parse_args()
 debug_message(4,"action: "+mainNS.action)
 debug_message(4,"args: "+str(mainNS.args))
-if mainNS.action=="listclient":
-    listclientNS = listclientParser.parse_args(mainNS.args)
-    listclient(listclientNS)
+if mainNS.action=="list":
+    listNS = listParser.parse_args(mainNS.args)
+    list(listNS)
 elif mainNS.action=="examine":
     examineNS = examineParser.parse_args(mainNS.args)
     examine(examineNS)
