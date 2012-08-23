@@ -764,10 +764,10 @@ editfileParser.add_argument("file",
                             type=argparse.FileType('r')
                             )
 editfileParser.add_argument("--add",
-                            help="If the client are not present then add it"
+                            help="If the client are not present then add it",
                             action="store_true")
 editfileParser.add_argument("--override","-o",
-                            help="Do not abort in case of error in file"
+                            help="Do not abort in case of error in file",
                             action="store_true")
 
 mainNS = mainParser.parse_args()
