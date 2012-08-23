@@ -303,8 +303,6 @@ class Client(Base):
                 session.commit()
                 session.close()
                 return False
-        
-        
     
     
     def switch_on_multithreading(self):
@@ -371,6 +369,21 @@ class Client(Base):
             return self.users
         else:
             return 0
+            
+    def delete(self):
+        """
+        Delelte all informations about this client and the client itself
+        
+        """
+        debug_message(4,"Deleting all temperatures about "+self.name)
+        for temperature in self.temperatures:
+            session.delete(temperature)
+        debug_message(4,"Deleting all auth events about "+self.name)
+        for event in self.authEvents:
+            session.delete(event)
+        debug_message(4,"Deleting client "+self.name)
+        session.delete(self)
+        session.commit()
         
     
 
