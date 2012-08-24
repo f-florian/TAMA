@@ -69,19 +69,19 @@ parser.add_argument("--hosts",
                     help="Generate hosts file",
                     action="store_true")
 parser.add_argument("--dhcp",
-                    help="Generate a part of the dhcp config file"
+                    help="Generate a part of the dhcp config file",
                     action="store_true")
-parser.add_argument("--yes","-y"
+parser.add_argument("--yes","-y",
                     help="Do not ask confirmation before writing etc files",
                     action="store_true")
 # parser.add_argument("--no","-n",
 #                     help="Do not write etc files, only simulate output",
 #                     action="store_true")
 parser.add_argument("--quiet","-q",
-                    help="Do not output files before writing"
+                    help="Do not output files before writing",
                     action="store_true")
 parser.add_argument("--simulate","-s",
-                    help="Do not write files"
+                    help="Do not write files",
                     action="store_true")
 
 options = parser.parse_args()
@@ -94,7 +94,7 @@ if options.ethers or options.all:
     else:
         ethers = ""
     for client in tama.session.query(tama.Client):
-        ethers+=(ether_format.format(name=client.name,ip=client.ip,mac=tama.mac)+"\n")
+        ethers+=(ethers_format.format(name=client.name,ip=client.ip,mac=client.mac)+"\n")
     ok = not options.simulate
     if not options.quiet:
         print "This is the ethers file:"
