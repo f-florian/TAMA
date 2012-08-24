@@ -108,8 +108,8 @@ if options.ethers or options.all:
                     print "Please give a valid responce!"
                 else:
                     break
-        if ok:
-            ethers_target_file = open(ethers_target,"w")
-            ethers_target_file.write(ethers)
-            print "ethers file writed"
+    if ok:
+        ethers_target_file = open(ethers_target,"w")
+        ethers_target_file.write(ethers)
+        print "ethers file writed"
     
