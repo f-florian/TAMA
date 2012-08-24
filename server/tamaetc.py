@@ -29,6 +29,12 @@ tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
     debug = tama_config.getint("default","debug")
+    ethers_format = tama_config.get("tamaetc","ethers_format")
+    ethers_target = tama_config.get("tamaetc","ethers_target")
+    if tama_config.has_option("tamaetc","ethers_head"):
+        ethers_head = tama_config.get("tamaetc","ethers_head")
+    else:
+        ethers_head = None
 
 except:
     print "[tamaetc] error while parsing "+TAMA_CONFIG_FILE
@@ -62,12 +68,48 @@ parser.add_argument("--dsh",
 parser.add_argument("--hosts",
                     help="Generate hosts file",
                     action="store_true")
-# parser.add_argument("--yes","-y",
-#                     help="Do not ask confirmation before writing etc files",
-#                     action="store_true")
+parser.add_argument("--dhcp",
+                    help="Generate a part of the dhcp config file"
+                    action="store_true")
+parser.add_argument("--yes","-y"
+                    help="Do not ask confirmation before writing etc files",
+                    action="store_true")
 # parser.add_argument("--no","-n",
 #                     help="Do not write etc files, only simulate output",
 #                     action="store_true")
+parser.add_argument("--quiet","-q",
+                    help="Do not output files before writing"
+                    action="store_true")
+parser.add_argument("--simulate","-s",
+                    help="Do not write files"
+                    action="store_true")
 
 options = parser.parse_args()
 
+if options.ethers or options.all:
+    if ethers_head is not None:
+        ethers_head_file = open(ethers_head,"r")
+        ethers = ethers_head_file.read()
+        ethers += "\n"
+    else:
+        ethers = ""
+    for client in tama.session.query(tama.Client):
+        ethers+=(ether_format.format(name=client.name,ip=client.ip,mac=tama.mac)+"\n")
+    ok = not options.simulate
+    if not options.quiet:
+        print "This is the ethers file:"
+        print ethers
+        if ok and not options.yes:
+            while True:
+                response = raw_input("Is it ok? [y/n] ")
+                try:
+                    ok = tama.string_to_bool(response)
+                except:
+                    print "Please give a valid responce!"
+                else:
+                    break
+        if ok:
+            ethers_target_file = open(ethers_target,"w")
+            ethers_target_file.write(ethers)
+            print "ethers file writed"
+    
