@@ -29,12 +29,6 @@ tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
     debug = tama_config.getint("default","debug")
-    ethers_format = tama_config.get("tamaetc","ethers_format")
-    ethers_target = tama_config.get("tamaetc","ethers_target")
-    if tama_config.has_option("tamaetc","ethers_head"):
-        ethers_head = tama_config.get("tamaetc","ethers_head")
-    else:
-        ethers_head = None
 
 except:
     print "[tamaetc] error while parsing "+TAMA_CONFIG_FILE
@@ -86,19 +80,50 @@ parser.add_argument("--simulate","-s",
 
 options = parser.parse_args()
 
-if options.ethers or options.all:
-    if ethers_head is not None:
-        ethers_head_file = open(ethers_head,"r")
-        ethers = ethers_head_file.read()
-        ethers += "\n"
+def generate(name):
+    """
+    Generate the file name reading configurations from tama_config
+    
+    format option: name_format
+    head option: name_head
+    tail option: name_tail
+    target option: name_target    
+    
+    """
+    name = str(name)
+    try:
+        format = tama_config.get("tamaetc",name+"_format")
+    except:
+        print "Unable to find "+name+"_format in configuration file"
+        print "Exiting..."
+        exit(2)
+    try:
+        target = tama_config.get("tamaetc",name+"_target")
+    except:
+        print "Unable to find "+name+"_target in configuration file"
+        print "Exiting..."
+        exit(2)
+    if tama_config.has_option("tamaetc",name+"_head"):
+        head = tama_config.get("tamaetc",name+"_head")
     else:
-        ethers = ""
+        head = None
+    if tama_config.has_option("tamaetc",name+"_tail"):
+        tail = tama_config.get("tamaetc",name+"_tail")
+    else:
+        tail = None
+
+    if head is not None:
+        head_file = open(head,"r")
+        buffer = head_file.read()
+        buffer += "\n"
+    else:
+        buffer = ""
     for client in tama.session.query(tama.Client):
-        ethers+=(ethers_format.format(name=client.name,ip=client.ip,mac=client.mac)+"\n")
+        buffer+=(format.format(name=client.name,ip=client.ip,mac=client.mac,n="\n")+"\n")
     ok = not options.simulate
     if not options.quiet:
-        print "This is the ethers file:"
-        print ethers
+        print "This is the "+name+" file:"
+        print buffer
         if ok and not options.yes:
             while True:
                 response = raw_input("Is it ok? [y/n] ")
@@ -109,7 +134,13 @@ if options.ethers or options.all:
                 else:
                     break
     if ok:
-        ethers_target_file = open(ethers_target,"w")
-        ethers_target_file.write(ethers)
-        print "ethers file writed"
+        target_file = open(target,"w")
+        target_file.write(buffer)
+        print name+" file saved"
+    
+if options.ethers or options.all: 
+    generate("ethers")
+if options.hosts or options.all:
+    generate("hosts")
+
     
