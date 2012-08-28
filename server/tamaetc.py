@@ -21,6 +21,7 @@
 
 import argparse
 import sys
+import os
 import ConfigParser
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
@@ -119,7 +120,7 @@ def generate(name):
     else:
         buffer = ""
     for client in tama.session.query(tama.Client):
-        buffer+=(format.format(name=client.name,ip=client.ip,mac=client.mac,n="\n")+"\n")
+        buffer+=(format.format(name=client.name,ip=client.ip,mac=client.mac,n="\n",o="{",c="}")+"\n")
     ok = not options.simulate
     if not options.quiet:
         print "This is the "+name+" file:"
@@ -163,38 +164,40 @@ def generate_dsh():
     machines = ""
     group = ""
     for group_path in os.listdir(dsh_dir+"/group"):
-        if os.path.isdir(group_path) or group_path == dsh_group:
+        if os.path.isdir(group_path) or \
+           group_path == dsh_group or \
+           group_path == "all":
             continue
         else:
             group_file = open(dsh_dir+"/group/"+group_path,"r")
             for line in group_file:
                 machines += line
-            machines += "/n"
+            machines += "\n"
             group_file.close()
     for client in tama.session.query(tama.Client):
         machines +=  client.name+"\n"
         group += client.name+"\n"
-     machines += "/n"
-     group += "/n"
+    machines += "\n"
+    group += "\n"
 
-     ok = not options.simulate
-     if not options.quiet:
-         print "This is the machines.list file:"
-         print machines
-         print
-         print "This is the group "+dsh_group
-         print group
-         if ok and not options.yes:
-             while True:
-                 response = raw_input("Is it ok? [y/n] ")
-                 try:
-                     ok = tama.string_to_bool(response)
-                 except:
-                     print "Please give a valid responce!"
-                 else:
-                     break
+    ok = not options.simulate
+    if not options.quiet:
+        print "This is the machines.list file:"
+        print machines
+        print
+        print "This is the group "+dsh_group
+        print group
+        if ok and not options.yes:
+            while True:
+                response = raw_input("Is it ok? [y/n] ")
+                try:
+                    ok = tama.string_to_bool(response)
+                except:
+                    print "Please give a valid responce!"
+                else:
+                    break
     if ok:
-        machines_file = open(dsh_dir+"/machines.list")
+        machines_file = open(dsh_dir+"/machines.list","w")
         machines_file.write(machines)
         machines_file.close()
         print "machines.list saved"
@@ -210,5 +213,5 @@ if options.hosts or options.all:
 if options.dhcp or options.all:
     generate("dhcp")
 if options.dsh or options.all:
-    generate ("dsh")
+    generate_dsh()
     
