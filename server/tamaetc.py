@@ -137,6 +137,71 @@ def generate(name):
         target_file = open(target,"w")
         target_file.write(buffer)
         print name+" file saved"
+
+def generate_dsh():
+    """
+    Generate the dsh configuation files
+    
+    This function read all the groups in dsh_groups_path
+    and add them to machines.list. Then it add the client
+    in tama database in the group named dsh_group
+    
+    """
+    # Parse the config file
+    try:
+        dsh_dir = tama_config.get("tamaetc","dsh_dir").rstrip("/")
+    except:
+        print "Unable to find dsh_dir in tama configuration file"
+        sys.exit(os.EX_CONFIG)
+    try:
+        dsh_group = tama_config.get("tamaetc","dsh_group")
+    except:
+        print "Unable to find dsh_group in tama configuration file"
+        sys.exit(os.EX_CONFIG)
+    
+    
+    machines = ""
+    group = ""
+    for group_path in os.listdir(dsh_dir+"/group"):
+        if os.path.isdir(group_path) or group_path == dsh_group:
+            continue
+        else:
+            group_file = open(dsh_dir+"/group/"+group_path,"r")
+            for line in group_file:
+                machines += line
+            machines += "/n"
+            group_file.close()
+    for client in tama.session.query(tama.Client):
+        machines +=  client.name+"\n"
+        group += client.name+"\n"
+     machines += "/n"
+     group += "/n"
+
+     ok = not options.simulate
+     if not options.quiet:
+         print "This is the machines.list file:"
+         print machines
+         print
+         print "This is the group "+dsh_group
+         print group
+         if ok and not options.yes:
+             while True:
+                 response = raw_input("Is it ok? [y/n] ")
+                 try:
+                     ok = tama.string_to_bool(response)
+                 except:
+                     print "Please give a valid responce!"
+                 else:
+                     break
+    if ok:
+        machines_file = open(dsh_dir+"/machines.list")
+        machines_file.write(machines)
+        machines_file.close()
+        print "machines.list saved"
+        group_file = open(dsh_dir+"/group/"+dsh_group,"w")
+        group_file.write(group)
+        group_file.close()
+        print dsh_group+" saved"
     
 if options.ethers or options.all: 
     generate("ethers")
@@ -144,4 +209,6 @@ if options.hosts or options.all:
     generate("hosts")
 if options.dhcp or options.all:
     generate("dhcp")
+if options.dsh or options.all:
+    generate ("dsh")
     
