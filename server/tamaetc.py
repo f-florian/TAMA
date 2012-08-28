@@ -142,5 +142,6 @@ if options.ethers or options.all:
     generate("ethers")
 if options.hosts or options.all:
     generate("hosts")
-
+if options.dhcp or options.all:
+    generate("dhcp")
     
