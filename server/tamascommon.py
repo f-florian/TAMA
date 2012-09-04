@@ -395,6 +395,49 @@ class Client(Base):
         session.delete(self)
         session.commit()
         
+    def consistency_check_users(self, correct=False):
+        """
+        Check for all clients if the number of user reported in consistent
+        whith the client state
+        
+        """
+        if self.state <= 3:
+            if self.users != -2:
+                if correct:
+                    debug_message(1,"Correcting the number of users in client "+self.name)
+                    self.users = -2
+                else:
+                    raise Exception("Found inconsistency in user number of client "+client.name)
+        elif self.state <=5:
+            if self.users != -1:
+                if correct:
+                    debug_message(1,"Correcting the number of users in client "+self.name)
+                    self.users = -1
+                else:
+                    raise Exception("Found inconsistency in user number of client "+client.name)
+        
+    def consistency_check_always_on(self, correct=False):
+        """
+        If always_in is true then check if auto_on is true and
+        auto_off is false
+        
+        """
+        if self.always_on:
+            if not auto_on:
+                if correct:
+                    debug_message(1,"Correcting auto_on in client "+client.name)
+                    self.auto_on = True
+                else:
+                    raise Exception("Auto_on is false in always on client "+client.name)
+            if auto_off:
+                if correct:
+                    debug_message(1,"Correcting auto_off in client "+client.name)
+                    self.auto_off = False
+                else:
+                    raise Exception("Auto_off is true in always on client "+client.name)
+        
+                                
+        
     
 
 class AuthEvent(Base):
@@ -603,3 +646,79 @@ def max_y():
     """
     return session.query(sqlalchemy.func.max(Client.pos_y))
 
+
+
+
+def db_consistency_check_positions():
+    """
+    Check if there are two (or more) clients in the same position
+    
+    """
+    mem = []
+    for x,y in session.query(Client.pos_x, Client.pos_y):
+        debug_message(3,"Read position "+str(x)+","+str(y))
+        if x == -1:
+            continue
+        else:
+            if (x,y) in mem:
+                debug_message(1,"Problem in position "+str(x)+","+str(y))                                 
+                raise Exception("Two clients are in the same position!")
+            else:
+                mem.append((x,y))
+    
+
+def db_consistency_check_ip():
+    """
+    Check if there are two (or more) client whith the same ip address.
+    Also check if all IP are valid
+    
+    """
+    mem = []
+    for ip in session.query(Client.ip):
+        debug_message(3,"Read IP "+ip)
+        validate_ip(ip)
+        if ip in mem:
+            debug_message(1,"IP "+ip+" duplicated!")
+            raise Exception("Two clients have the same IP!")
+        else:
+            mem.append(ip)
+    
+def db_consistency_check_mac():
+    """
+    Check if there are two (or more) client whith the same mac address.
+    Also check if all mac are valid
+    
+    """
+    mem = []
+    for mac in session.query(Client.mac):
+        debug_message(3,"Read MAC "+mac)
+        validate_mac(mac)
+        if mac in mem:
+            debug_message(1,"MAC "+mac+" duplicated!")
+            raise Exception("Two clients have the same MAC!")
+        else:
+            mem.append(mac)
+
+def db_consistency_check_users(correct=False):
+    """
+    Check for all clients if the number of user reported in consistent
+    with the client state
+    
+    """
+    for client in session.query(Client):
+        client.consistency_check_users(correct)
+    
+def db_consistency_check_always_on(correct=False):
+    """
+    Check for all client with always_on if auto_on is true and aut_off
+    is false
+    
+    """
+    for client in session.query(Client).filter(Client.always_on == True):
+        client.consistency_check_always_on(correct)
+    
+
+
+
+            
+                                
