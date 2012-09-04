@@ -8,7 +8,8 @@ run on server
 It provides:
  - definition of common classes and integration with sqlalchemy
  - function to refresh database data
- - function to switch on or off clients
+ - functions to switch on or off clients
+ - functions 
  - some stupid function to query the database
 
 """
@@ -438,8 +439,6 @@ class Client(Base):
         
                                 
         
-    
-
 class AuthEvent(Base):
     """
     Save information about auth event (connection and disconenction of
@@ -718,7 +717,37 @@ def db_consistency_check_always_on(correct=False):
         client.consistency_check_always_on(correct)
     
 
-
-
-            
-                                
+def diagnostics(level=3):
+    """
+    Run a diagnostic on tamaserver.
+    
+    Tama will run every diagnostic whith level less or equal of level
+    
+    level 1:
+    level 2:
+    level 3:
+    level 4:
+    level 5:
+    
+    """
+    debug_message(4,"Initializing level "+level+" diagnostic")
+    try:
+        int(level)
+    except:
+        raise Exception("Diagnostics level must be an integer!")
+    else:
+        if level<1 or level>5:
+            raise Exception("Diagnostics level must be in 1..5!")
+    if level >= 5:
+        db_consistency_check_ip()
+        db_consistency_check_mac()
+    if level >= 4:
+        db_consistency_check_positions()
+    if level >= 3:
+        db_consistency_check_always_on()
+        db_consistency_check_users()
+    if level >= 2:
+        pass
+    if level == 1:
+        pass
+    
