@@ -101,6 +101,10 @@ class Client(Base):
         count       Add this client to the list of free clients
         last_on     The last time that the client was see online
         last_off    The last time that the client was see offline
+        pos_x       Position of the client in the room, x coordinate
+        pos_y       Position of the client in the room, y coordinate
+    
+
         
     """
     __tablename__ = 'clients'
@@ -140,6 +144,12 @@ class Client(Base):
     
     last_off = sqlalchemy.Column(sqlalchemy.DateTime)
     """The last time that the client was see offline"""
+    
+    pos_x = sqlalchemy.Column(sqlalchemy.Integer)
+    """Position of the client in the room, x coordinate"""
+    
+    pos_y = sqlalchemy.Column(sqlalchemy.Integer)
+    """Position of the client in the room, y coordinate"""
     
     
     def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count):
@@ -578,3 +588,18 @@ def query_name(name):
     #~ else:
         #~ return temperatures
     #~ 
+
+def max_x():
+    """
+    Returns the maximum x coordinate of all clients
+    
+    """
+    return session.query(sqlalchemy.func.max(Client.pos_x))
+
+def max_y():
+    """
+    Returns the maximum y coordinate of all clients
+    
+    """
+    return session.query(sqlalchemy.func.max(Client.pos_y))
+
