@@ -474,9 +474,9 @@ def edit(options):
     This function search the client and ask for new values
     
     """
-    client = tama.query_name(options.name)
+    client = tama.query_name(options.client_name)
     if client is None:
-        print "Client "+options.name+" non found in the main database"
+        print "Client "+options.client_name+" non found in the main database"
         return
     if options.all or options.name:
         client.name = get_name(client.name)
@@ -698,7 +698,7 @@ addParser.add_argument("--file", "-f",
 editParser = argparse.ArgumentParser(description="Edit infromations\
                                      about one client",
                                      prog=sys.argv[0]+" edit")
-editParser.add_argument("name",
+editParser.add_argument("client_name",
                         help="The name of the client to edit")
 editParserTargetGroup = editParser.add_mutually_exclusive_group()
 editParserTargetGroup.add_argument("--all",
