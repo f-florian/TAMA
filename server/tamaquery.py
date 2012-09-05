@@ -685,6 +685,15 @@ def delete(options):
         print "More that one client detected!"
         print "If you want to delete them all give the force option"
 
+def diagnostic(options):
+    """
+    Main function for the diagnostic option
+    
+    This function run the diagnostic function from tamascommon
+    
+    """
+    tama.diagnostic(options.level)
+
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
 mainParser.add_argument("action",
@@ -698,6 +707,7 @@ mainParser.add_argument("action",
                                  "edit",
                                  "editfile",
                                  "delete",
+                                 "diagnostic",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -839,6 +849,12 @@ deleteParser.add_argument("name",
                        help="The name of the client to delete")
 deleteParser.add_argument("--force","-f",
                        action="store_true")
+
+diagnosticParser = argparse.ArgumentParser(description="Run a diagnostic on tama software",
+                                           prog = "tamaquery")
+diagnosticParser.add_argument("level",
+                              help="The level of the diagnostic",
+                              type=int)
                        
 
 mainNS = mainParser.parse_args()
@@ -871,3 +887,6 @@ elif mainNS.action=="editfile":
 elif mainNS.action=="delete":
     deleteNS = deleteParser.parse_args(mainNS.args)
     delete(deleteNS)
+elif mainNS.action=="diagnostic":
+    diagnosticNS = diagnosticParser.parse_args(mainNS.args)
+    diagnostic(diagnosticNS)
