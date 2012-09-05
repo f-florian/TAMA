@@ -153,7 +153,7 @@ class Client(Base):
     """Position of the client in the room, y coordinate"""
     
     
-    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count):
+    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count, pos_x, pos_y):
 
         self.name = name
         self.ip = ip
@@ -169,6 +169,8 @@ class Client(Base):
         self.count = count
         self.last_on = datetime.datetime.now()
         self.last_off = datetime.datetime.now()
+        self.pos_x = pos_x
+        self.pos_y = pos_y
     
     def __repr__(self):
         return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s)>" % (
@@ -717,7 +719,7 @@ def db_consistency_check_always_on(correct=False):
         client.consistency_check_always_on(correct)
     
 
-def diagnostics(level=3):
+def diagnostic(level=3):
     """
     Run a diagnostic on tamaserver.
     
