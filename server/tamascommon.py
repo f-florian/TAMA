@@ -738,15 +738,15 @@ def diagnostics(level=3):
     else:
         if level<1 or level>5:
             raise Exception("Diagnostics level must be in 1..5!")
-    if level >= 5:
+    if level <= 5:
         db_consistency_check_ip()
         db_consistency_check_mac()
-    if level >= 4:
+    if level <= 4:
         db_consistency_check_positions()
-    if level >= 3:
+    if level <= 3:
         db_consistency_check_always_on()
         db_consistency_check_users()
-    if level >= 2:
+    if level <= 2:
         pass
     if level == 1:
         pass
