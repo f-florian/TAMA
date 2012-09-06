@@ -260,7 +260,7 @@ class Client(Base):
         
         """
         debug_message(2,"Accendo "+self.name)
-        os.system(TAMA_DIR+"tamason.sh "+self.mac+" "+eth_interface)
+        os.system(tama_dir+"tamason.sh "+self.mac+" "+eth_interface)
         
     
     def switch_on(self):
