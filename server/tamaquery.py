@@ -420,7 +420,7 @@ def get_position(default_x=None,default_y=None):
             print "Please type yes or no"
         else:
             break
-    if have_position == false
+    if have_position == false:
         return (-1,-1)
     else:
         while(1):
@@ -692,7 +692,12 @@ def diagnostic(options):
     This function run the diagnostic function from tamascommon
     
     """
-    tama.diagnostic(options.level)
+    try:
+        tama.diagnostic(options.level)
+    except Exception, e:
+        print e
+    else:
+        print "Nothing strange found"
 
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")

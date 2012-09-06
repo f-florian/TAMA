@@ -675,7 +675,7 @@ def db_consistency_check_ip():
     
     """
     mem = []
-    for ip in session.query(Client.ip):
+    for ip, in session.query(Client.ip):
         debug_message(3,"Read IP "+ip)
         validate_ip(ip)
         if ip in mem:
@@ -691,7 +691,7 @@ def db_consistency_check_mac():
     
     """
     mem = []
-    for mac in session.query(Client.mac):
+    for mac, in session.query(Client.mac):
         debug_message(3,"Read MAC "+mac)
         validate_mac(mac)
         if mac in mem:
@@ -732,7 +732,7 @@ def diagnostic(level=3):
     level 5:
     
     """
-    debug_message(4,"Initializing level "+level+" diagnostic")
+    debug_message(4,"Initializing level "+str(level)+" diagnostic")
     try:
         int(level)
     except:
