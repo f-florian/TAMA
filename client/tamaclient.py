@@ -19,6 +19,11 @@
 # You should have received a copy of the GNU General Public License
 # along with tama. If not, see <http://www.gnu.org/licenses/>.
 
+"""
+This is the main deamon runned at startup on all client
+
+"""
+
 import os
 #~ import sqlalchemy
 #~ from sqlalchemy.ext.declarative import declarative_base
@@ -28,26 +33,42 @@ import socket
 import signal
 import subprocess
 import datetime
+import ConfigParser
 
-debug = 4
-PID_FILE_PATH = "tamaclientar51.pid"
-#AUTH_DB_PATH = "auth.db"
-TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
-#AUTH_LOG_PATH = 'auth.log'
-PORT = 12345
+TAMA_CONFIG_FILE = "/etc/tama.ini"
+
+# Parse the config file
+tama_config = ConfigParser.ConfigParser()
+tama_config.read(TAMA_CONFIG_FILE)
+try:
+    debug = tama_config.getint("default","debug")
+    tama_dir = tama_config.getint("default","tama_dir")
+    pid_file_path = tama_config.getint("tamaclient","pid_file_path")
+    auth_db_path = tama_config.getint("tamaclient","auth_db_path")
+    auth_log_path = tama_config.getint("tamaclient","auth_log_path")
+    port = tama_config.getint("tamaclient","port")
+except:
+    print "[tamaclient] error while parsing "+TAMA_CONFIG_FILE
+    print "[tamaclient] exiting..."
+    exit(2)
 
 def debugMessage (level, msg):
+    """
+    Default function to print debug messages
+    
+    """
     if level <=debug:
         print "[Tamaclientar51 - debug] "+str(msg)
         
-
-if os.path.exists(PID_FILE_PATH):
-        debugMessage(1, "Tamaclient is already running, exiting")
-        exit(0)
+# Check if tamaclient is already running
+if os.path.exists(pid_file_path):
+    debugMessage(1, "Tamaclient is already running, exiting")
+    exit(0)
 else:
-        pid_file = open(PID_FILE_PATH, "w")
-        pid_file.write(str(os.getpid())+"\n")
-        pid_file.close()
+    # Create the .pid file
+    pid_file = open(pid_file_path, "w")
+    pid_file.write(str(os.getpid())+"\n")
+    pid_file.close()
 
 #~ engine = sqlalchemy.create_engine('sqlite:///'+AUTH_DB_PATH)
 #~ Base = declarative_base()
@@ -92,7 +113,11 @@ def connectedUser():
     return stdout
 
 def temperature(n):
-    (stdout, stderr) = subprocess.Popen([TAMA_DIR+"tamatemp.sh","0"], stdout=subprocess.PIPE).communicate()
+    """
+    Return the temperature of core number n
+    
+    """
+    (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",str(n)], stdout=subprocess.PIPE).communicate()
     return stdout
 
 
@@ -124,9 +149,9 @@ def connection(conn):
     conn.close()
 
 
-
+# Open the socket
 s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-s.bind (( "" , PORT ))
+s.bind (( "" , port ))
 s.listen(5)
 
 def sigExit(signum, frame):
@@ -138,15 +163,16 @@ def sigExit(signum, frame):
     #stop_event = Event(datetime.datetime.today(),"stop","tama","tamaclient",socket.gethostname(),"")
     #session.add(stop_event)
     #session.commit()
-    os.remove(PID_FILE_PATH)
+    os.remove(pid_file_path)
     exit(0)
 
 signal.signal(signal.SIGTERM,sigExit)
 signal.signal(signal.SIGINT,sigExit)
 
 while (1):
+    # Main loop
     conn, addr = s.accept()
     thread.start_new_thread ( connection , ( conn ,) )
 
 
-os.remove(PID_FILE_PATH)
+os.remove(pid_file_path)

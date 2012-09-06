@@ -30,7 +30,7 @@ import sqlalchemy
 import sqlalchemy.orm
 import ConfigParser
 
-TAMA_CONFIG_FILE = "/etc/tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 #debug = 4
 #pid_file_path = "tamaserver.pid"
@@ -45,7 +45,7 @@ try:
     pid_file_path = tama_config.get("tamaserver","pid_file_path")
     free_policy_file = tama_config.get("tamaserver","free_policy_file")
 except:
-    print "[tamaserver] error while parsing "+free_policy_file
+    print "[tamaserver] error while parsing "+TAMA_CONFIG_FILE
     print "[tamaserver] exiting..."
     exit(2)
 

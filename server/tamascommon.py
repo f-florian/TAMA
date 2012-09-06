@@ -47,7 +47,7 @@ import datetime
 import time
 import ConfigParser
 
-TAMA_CONFIG_FILE = "/etc/tama.ini"
+TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 _debug = 0
 #MAIN_DB_PATH = "main.db"
@@ -142,11 +142,15 @@ class Client(Base):
     """The last time that the client was see offline"""
     
     
-    def __init__ (self, name, ip, mac, users, state, auto_on, auto_off, always_on, count):
+    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count):
+
         self.name = name
         self.ip = ip
         self.mac = mac
-        self.users = users
+        if state < 4:
+            self.users = -2
+        else:
+            self.users = -1
         self.state = state
         self.auto_on = auto_on
         self.auto_off = auto_off
@@ -256,7 +260,7 @@ class Client(Base):
         
         """
         debug_message(2,"Accendo "+self.name)
-        os.system(TAMA_DIR+"tamason.sh "+self.mac+" "+eth_interface)
+        os.system(tama_dir+"tamason.sh "+self.mac+" "+eth_interface)
         
     
     def switch_on(self):
@@ -299,8 +303,6 @@ class Client(Base):
                 session.commit()
                 session.close()
                 return False
-        
-        
     
     
     def switch_on_multithreading(self):
@@ -367,6 +369,21 @@ class Client(Base):
             return self.users
         else:
             return 0
+            
+    def delete(self):
+        """
+        Delelte all informations about this client and the client itself
+        
+        """
+        debug_message(4,"Deleting all temperatures about "+self.name)
+        for temperature in self.temperatures:
+            session.delete(temperature)
+        debug_message(4,"Deleting all auth events about "+self.name)
+        for event in self.authEvents:
+            session.delete(event)
+        debug_message(4,"Deleting client "+self.name)
+        session.delete(self)
+        session.commit()
         
     
 
@@ -471,6 +488,58 @@ def refresh_data():
         client.refresh()
         
     session.commit()
+
+# Funzioni per convalidare o convertire le stringhe
+
+def string_to_bool(string):
+    """
+    Convert a string (True/False) in a boolean value
+    
+    """
+    string = string.lower().strip()
+    if string in [ "true", "1", "yes", "y", "t" ]:
+        return True
+    elif string in [ "false", "0", "no", "n", "f" ]:
+        return False
+    else:
+        raise Exception ("Invalid bool string")
+
+def validate_ip(string):
+    """
+    Return string if string is a IP, else raise an exception
+    
+    """
+    ip = string.split(".")
+    if len(ip)!=4:
+        raise Exception("Invalid IP")
+    for i in range(4):
+        try:
+            num = int(ip[i])
+        except:
+            raise Exception("Invalid IP")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid IP")
+    return string
+
+def validate_mac(string):
+    """
+    Return string if string is a MAC address, else raise an exception
+    
+    """
+    mac = string.split(":")
+    if len(mac)!=6:
+        raise Exception("Invalid MAC address")
+    for i in range(6):
+        try:
+            num = int(mac[i],16)
+        except:
+            raise Exception("Invalid MAC address")
+        else:
+            if num<0 or num>255:
+                raise Exception("Invalid MAC address")
+    return string
+
     
 
 # Funzioni stupide
