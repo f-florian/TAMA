@@ -185,3 +185,4 @@ def main():
     output_file.write("</html>\n")
     output_file.close()
     
+main()
