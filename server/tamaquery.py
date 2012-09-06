@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# tamaserver.py
+# tamaquery.py
 # This file is part of TAMA
 # 
 # Copyright (C) 2012 - Enrico Polesel
