@@ -131,7 +131,7 @@ def generate_client_box(x,y):
     output += "   <td width=\"200\" height=\"50\" align=\"center\" bgcolor=\""+background_color+"\">\n"
     output += "    <font color=\""+text_color+"\">\n"
     output += "     "+name+"\n"
-    output += "    <\font>\n"
+    output += "    </font>\n"
     output += "   </td>\n"
     return output
 
@@ -141,14 +141,14 @@ def generate_diagram():
     
     """
     output = ""
-    output += " <h2 align=\"center\"> Computer diagram<\h2>\n"
-    output += " <table align=\"centre\">\n"
-    max_x = tama.max_x()
-    max_y = tama.max_y()
-    for i in range(max_y):
+    output += " <h2 align=\"center\">Computer diagram</h2>\n"
+    output += " <table align=\"center\">\n"
+    max_x = tama.max_x() + 1
+    max_y = tama.max_y() + 1
+    for i in reversed(range(max_y)):
         output += "  <tr>\n"
         for j in range(max_x):
-            generate_client_box(j,i)
+            output += generate_client_box(j,i)
         output += "  </tr>\n"
     output += " </table>\n"
     return output
@@ -158,7 +158,32 @@ def generate_table():
     Generate a table whith data from all client
     
     """
-    return ""
+    output = ""
+    output += " <h2 align=\"center\">Computer list</h2\n>"
+    output += " <table align=\"center\" border=\"1\">\n"
+    output += "  <tr>"
+    output += "   <th>ID</th>"
+    output += "   <th>Name</th>"
+    output += "   <th>IP address</th>"
+    output += "   <th>MAC address</th>"
+    output += "   <th>Users</th>"
+    output += "   <th>State</th>"
+    output += "   <th>Last on</th>"
+    output += "   <th>Last off</th>"
+    output += "  </tr>"    
+    for client in tama.session.query(tama.Client):
+        output += "  <tr>"
+        output += "   <td>"+str(client.id)+"</td>"
+        output += "   <td>"+client.name+"</td>"
+        output += "   <td>"+client.ip+"</td>"
+        output += "   <td>"+client.mac+"</td>"
+        output += "   <td>"+str(client.users_human())+"</td>"
+        output += "   <td>"+client.str_state()+"</td>"
+        output += "   <td>"+str(client.last_on)+"</td>"
+        output += "   <td>"+str(client.last_off)+"</td>"
+        output += "  </tr>"
+    output += " </table>"
+    return output
 
 
 def generate_body():
@@ -174,7 +199,8 @@ def generate_body():
     output += generate_table()
     output += ""
     output += ""
-    output += "<\body>\n"
+    output += "</body>\n"
+    return output
     
 
 def main():
