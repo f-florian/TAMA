@@ -212,6 +212,7 @@ def decrease_free_client(num):
         filter(tama.Client.users == 0).\
         filter(tama.Client.auto_off == 1).\
         filter(tama.Client.always_on == 0).\
+        filter(tama.Client.last_busy < datetime.datetime.now()-datetime.timedelta(minutes=10)).\
         order_by(tama.Client.last_on).\
         all()
     for client in available:
