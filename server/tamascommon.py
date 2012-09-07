@@ -99,11 +99,14 @@ class Client(Base):
         auto_on     Can the client be switched on automatically?
         auto_off    Can the client be switched off automatically?
         always_on   Have the client to be always on?
-        count       Add this client to the list of free clients
-        last_on     The last time that the client was see online
-        last_off    The last time that the client was see offline
-        pos_x       Position of the client in the room, x coordinate
-        pos_y       Position of the client in the room, y coordinate
+        count            Add this client to the list of free clients
+        last_on          The last time that the client was see online
+        last_off         The last time that the client was see offline
+        last_busy        The last time that the client was see busy
+        last_refresh     The last time that client data was refreshed
+        pos_x            Position of the client in the room, x coordinate
+        pos_y            Position of the client in the room, y coordinate
+        
     
 
         
@@ -145,6 +148,12 @@ class Client(Base):
     
     last_off = sqlalchemy.Column(sqlalchemy.DateTime)
     """The last time that the client was see offline"""
+
+    last_busy = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that the client was see busy"""
+
+    last_refresh = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that client data was refreshed"""
     
     pos_x = sqlalchemy.Column(sqlalchemy.Integer)
     """Position of the client in the room, x coordinate"""
@@ -169,11 +178,13 @@ class Client(Base):
         self.count = count
         self.last_on = datetime.datetime.now()
         self.last_off = datetime.datetime.now()
+        self.last_busy = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
         self.pos_x = pos_x
         self.pos_y = pos_y
     
     def __repr__(self):
-        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, pos_x: %d, pos_y: %d)>" % (
+        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, last_busy: %s, last_refresh: %s pos_x: %d, pos_y: %d)>" % (
                                             self.name,
                                             self.ip,
                                             self.mac,
@@ -185,6 +196,8 @@ class Client(Base):
                                             self.count,
                                             str(self.last_on),
                                             str(self.last_off),
+                                            str(self.last_busy),
+                                            str(self.last_refresh),
                                             self.pos_x,
                                             self.pos_y
                                             )
@@ -227,6 +240,7 @@ class Client(Base):
             self.last_off = datetime.datetime.now()
         if (not online):
             debug_message(3,"Client "+self.name+" not online")
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             return
         
@@ -241,6 +255,8 @@ class Client(Base):
             self.state = 5
             self.user = -1
             debug_message(2,self.name+": tama not responding")
+            self.last_refresh = datetime.datetime.now()
+            session.commit()
             return
         else:
             self.state = 7
@@ -253,8 +269,12 @@ class Client(Base):
                 self.state = 5
                 self.user = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
+            else:
+                if self.user > 0:
+                    self.last_busy = datetime.datetime.now()
             try:
                 s.send("temp0")
                 temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
@@ -262,11 +282,13 @@ class Client(Base):
                 self.state = 5
                 self.user = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
             self.temperatures.append(Temperature(datetime.datetime.now(),temp))
             s.send("quit")
             s.close()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
     
     def switch_on_simple(self):
@@ -298,6 +320,7 @@ class Client(Base):
         if online:
             self.state=7
             self.last_on=datetime.datetime.now()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             session.close()
             return True
@@ -309,12 +332,14 @@ class Client(Base):
             if online:
                 self.state=7
                 self.last_on=datetime.datetime.now()
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return True
             else:
                 debug_message(2,"Non riesco ad accedere "+self.name)
                 self.state = 1
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return False
@@ -344,6 +369,7 @@ class Client(Base):
         self.state = 3
         self.users = -2
         self.last_off = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
         session.commit()
     
     def switch(self,state):
