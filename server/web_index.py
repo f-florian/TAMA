@@ -170,6 +170,8 @@ def generate_table():
     output += "   <th>State</th>"
     output += "   <th>Last on</th>"
     output += "   <th>Last off</th>"
+    output += "   <th>Last busy</th>"
+    output += "   <th>Last refresh</th>"
     output += "  </tr>"    
     for client in tama.session.query(tama.Client):
         output += "  <tr>"
@@ -181,6 +183,8 @@ def generate_table():
         output += "   <td>"+client.str_state()+"</td>"
         output += "   <td>"+str(client.last_on)+"</td>"
         output += "   <td>"+str(client.last_off)+"</td>"
+        output += "   <td>"+str(client.last_busy)+"</td>"
+        output += "   <td>"+str(client.last_refresh)+"</td>"
         output += "  </tr>"
     output += " </table>"
     return output
