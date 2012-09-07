@@ -19,18 +19,18 @@ It provides:
 # 
 # Copyright (C) 2012 - Enrico Polesel
 # 
-# tama is free software; you can redistribute it and/or modify
+# TAMA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # any later version.
 # 
-# tama is distributed in the hope that it will be useful,
+# TAMA is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with tama. If not, see <http://www.gnu.org/licenses/>.
+# along with TAMA. If not, see <http://www.gnu.org/licenses/>.
 
 # In this file there is some classes used by tamaserver
 # It also start the sqlalchemy engine (and session?)
@@ -83,29 +83,29 @@ class Client(Base):
     Save informations about one client
     
     Attributes:
-        id          The primary key for database
-        name        The name of the client
-        ip          The ip address of the client
-        mac         The mac address of the client
-        users       The number of users connected to the client
-        state       The state of the client (numerical aliases)
-                        0: morto (manuale)
-                        1: spento, accensione remota non funzionante
-                        2: spento (non da tamaserver)
-                        3: spento da tamaserver
-                        4: non gestito da tamaserver
-                        5: acceso, tamaclient non funzionante
-                        7: acceso
-        auto_on     Can the client be switched on automatically?
-        auto_off    Can the client be switched off automatically?
-        always_on   Have the client to be always on?
-        count            Add this client to the list of free clients
-        last_on          The last time that the client was see online
-        last_off         The last time that the client was see offline
-        last_busy        The last time that the client was see busy
-        last_refresh     The last time that client data was refreshed
-        pos_x            Position of the client in the room, x coordinate
-        pos_y            Position of the client in the room, y coordinate
+        id              The primary key for database
+        name            The name of the client
+        ip              The ip address of the client
+        mac             The mac address of the client
+        users           The number of users connected to the client
+        state           The state of the client (numerical aliases)
+                            0: morto (manuale)
+                            1: spento, accensione remota non funzionante
+                            2: spento (non da tamaserver)
+                            3: spento da tamaserver
+                            4: non gestito da tamaserver
+                            5: acceso, tamaclient non funzionante
+                            7: acceso
+        auto_on         Can the client be switched on automatically?
+        auto_off        Can the client be switched off automatically?
+        always_on       Have the client to be always on?
+        count           Add this client to the list of free clients
+        last_on         The last time that the client was see online
+        last_off        The last time that the client was see offline
+        last_busy       The last time that the client was see busy
+        last_refresh    The last time that client data was refreshed
+        pos_x           Position of the client in the room, x coordinate
+        pos_y           Position of the client in the room, y coordinate
         
     
 
