@@ -160,7 +160,7 @@ def generate_table():
     """
     output = ""
     output += " <h2 align=\"center\">Computer list</h2\n>"
-    output += " <table align=\"center\" border=\"1\">\n"
+    output += " <table border=\"1\">\n"
     output += "  <tr>"
     output += "   <th>ID</th>"
     output += "   <th>Name</th>"
