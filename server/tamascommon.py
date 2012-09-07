@@ -173,7 +173,7 @@ class Client(Base):
         self.pos_y = pos_y
     
     def __repr__(self):
-        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s)>" % (
+        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, pos_x: %d, pos_y: %d)>" % (
                                             self.name,
                                             self.ip,
                                             self.mac,
@@ -184,7 +184,9 @@ class Client(Base):
                                             self.always_on,
                                             self.count,
                                             str(self.last_on),
-                                            str(self.last_off)
+                                            str(self.last_off),
+                                            self.pos_x,
+                                            self.pos_y
                                             )
     
     def ping (self):
@@ -638,14 +640,14 @@ def max_x():
     Returns the maximum x coordinate of all clients
     
     """
-    return session.query(sqlalchemy.func.max(Client.pos_x))
+    return session.query(sqlalchemy.func.max(Client.pos_x)).scalar()
 
 def max_y():
     """
     Returns the maximum y coordinate of all clients
     
     """
-    return session.query(sqlalchemy.func.max(Client.pos_y))
+    return session.query(sqlalchemy.func.max(Client.pos_y)).scalar()
 
 
 
