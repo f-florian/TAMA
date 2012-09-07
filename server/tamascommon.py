@@ -253,7 +253,7 @@ class Client(Base):
             s.connect((self.ip, 100))
         except:
             self.state = 5
-            self.user = -1
+            self.users = -1
             debug_message(2,self.name+": tama not responding")
             self.last_refresh = datetime.datetime.now()
             session.commit()
@@ -267,20 +267,20 @@ class Client(Base):
                 self.users = int(s.recv(1024).rstrip("\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
                 self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
             else:
-                if self.user > 0:
+                if self.users > 0:
                     self.last_busy = datetime.datetime.now()
             try:
                 s.send("temp0")
                 temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
                 self.last_refresh = datetime.datetime.now()
                 session.commit()
