@@ -19,18 +19,18 @@ It provides:
 # 
 # Copyright (C) 2012 - Enrico Polesel
 # 
-# tama is free software; you can redistribute it and/or modify
+# TAMA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # any later version.
 # 
-# tama is distributed in the hope that it will be useful,
+# TAMA is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with tama. If not, see <http://www.gnu.org/licenses/>.
+# along with TAMA. If not, see <http://www.gnu.org/licenses/>.
 
 # In this file there is some classes used by tamaserver
 # It also start the sqlalchemy engine (and session?)
@@ -83,27 +83,30 @@ class Client(Base):
     Save informations about one client
     
     Attributes:
-        id          The primary key for database
-        name        The name of the client
-        ip          The ip address of the client
-        mac         The mac address of the client
-        users       The number of users connected to the client
-        state       The state of the client (numerical aliases)
-                        0: morto (manuale)
-                        1: spento, accensione remota non funzionante
-                        2: spento (non da tamaserver)
-                        3: spento da tamaserver
-                        4: non gestito da tamaserver
-                        5: acceso, tamaclient non funzionante
-                        7: acceso
-        auto_on     Can the client be switched on automatically?
-        auto_off    Can the client be switched off automatically?
-        always_on   Have the client to be always on?
-        count       Add this client to the list of free clients
-        last_on     The last time that the client was see online
-        last_off    The last time that the client was see offline
-        pos_x       Position of the client in the room, x coordinate
-        pos_y       Position of the client in the room, y coordinate
+        id              The primary key for database
+        name            The name of the client
+        ip              The ip address of the client
+        mac             The mac address of the client
+        users           The number of users connected to the client
+        state           The state of the client (numerical aliases)
+                            0: morto (manuale)
+                            1: spento, accensione remota non funzionante
+                            2: spento (non da tamaserver)
+                            3: spento da tamaserver
+                            4: non gestito da tamaserver
+                            5: acceso, tamaclient non funzionante
+                            7: acceso
+        auto_on         Can the client be switched on automatically?
+        auto_off        Can the client be switched off automatically?
+        always_on       Have the client to be always on?
+        count           Add this client to the list of free clients
+        last_on         The last time that the client was see online
+        last_off        The last time that the client was see offline
+        last_busy       The last time that the client was see busy
+        last_refresh    The last time that client data was refreshed
+        pos_x           Position of the client in the room, x coordinate
+        pos_y           Position of the client in the room, y coordinate
+        
     
 
         
@@ -145,6 +148,12 @@ class Client(Base):
     
     last_off = sqlalchemy.Column(sqlalchemy.DateTime)
     """The last time that the client was see offline"""
+
+    last_busy = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that the client was see busy"""
+
+    last_refresh = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that client data was refreshed"""
     
     pos_x = sqlalchemy.Column(sqlalchemy.Integer)
     """Position of the client in the room, x coordinate"""
@@ -169,11 +178,13 @@ class Client(Base):
         self.count = count
         self.last_on = datetime.datetime.now()
         self.last_off = datetime.datetime.now()
+        self.last_busy = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
         self.pos_x = pos_x
         self.pos_y = pos_y
     
     def __repr__(self):
-        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, pos_x: %d, pos_y: %d)>" % (
+        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, last_busy: %s, last_refresh: %s pos_x: %d, pos_y: %d)>" % (
                                             self.name,
                                             self.ip,
                                             self.mac,
@@ -185,6 +196,8 @@ class Client(Base):
                                             self.count,
                                             str(self.last_on),
                                             str(self.last_off),
+                                            str(self.last_busy),
+                                            str(self.last_refresh),
                                             self.pos_x,
                                             self.pos_y
                                             )
@@ -227,6 +240,7 @@ class Client(Base):
             self.last_off = datetime.datetime.now()
         if (not online):
             debug_message(3,"Client "+self.name+" not online")
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             return
         
@@ -239,8 +253,10 @@ class Client(Base):
             s.connect((self.ip, 100))
         except:
             self.state = 5
-            self.user = -1
+            self.users = -1
             debug_message(2,self.name+": tama not responding")
+            self.last_refresh = datetime.datetime.now()
+            session.commit()
             return
         else:
             self.state = 7
@@ -251,22 +267,28 @@ class Client(Base):
                 self.users = int(s.recv(1024).rstrip("\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
+            else:
+                if self.users > 0:
+                    self.last_busy = datetime.datetime.now()
             try:
                 s.send("temp0")
                 temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
             self.temperatures.append(Temperature(datetime.datetime.now(),temp))
             s.send("quit")
             s.close()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
     
     def switch_on_simple(self):
@@ -298,6 +320,7 @@ class Client(Base):
         if online:
             self.state=7
             self.last_on=datetime.datetime.now()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             session.close()
             return True
@@ -309,12 +332,14 @@ class Client(Base):
             if online:
                 self.state=7
                 self.last_on=datetime.datetime.now()
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return True
             else:
                 debug_message(2,"Non riesco ad accedere "+self.name)
                 self.state = 1
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return False
@@ -344,6 +369,7 @@ class Client(Base):
         self.state = 3
         self.users = -2
         self.last_off = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
         session.commit()
     
     def switch(self,state):

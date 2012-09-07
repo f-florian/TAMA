@@ -126,12 +126,14 @@ def examine(options):
         print "%-16s %s" % ("mac", str(client.mac))
         print "%-16s %d" % ("users", client.users_human())
         print "%-16s %s" % ("state", client.str_state())
-        print "%-16s %s" % ("auto_on", str(client.auto_on))
+        print "%-16s %s" % ("last_on", str(client.last_on))
         print "%-16s %s" % ("last_off", str(client.last_off))
+        print "%-16s %s" % ("last_busy", str(client.last_busy))
+        print "%-16s %s" % ("last_refresh", str(client.last_refresh))
+        print "%-16s %s" % ("auto_on", str(client.auto_on))
+        print "%-16s %s" % ("auto_off", str(client.auto_off))
         print "%-16s %s" % ("always_on", str(client.always_on))
         print "%-16s %s" % ("count", str(client.count))
-        print "%-16s %s" % ("last_on", str(client.last_on))
-        print "%-16s %s" % ("auto_off", str(client.auto_off))
         print "%-16s %d°C @ %s" % ("last temperature", 
                                     client.temperatures[-1].measure,
                                     client.temperatures[-1].date)
