@@ -106,6 +106,7 @@ class Client(Base):
         last_refresh    The last time that client data was refreshed
         pos_x           Position of the client in the room, x coordinate
         pos_y           Position of the client in the room, y coordinate
+        memory          Total memory of the client (-1 if unknow)
         
     
 
@@ -160,6 +161,9 @@ class Client(Base):
     
     pos_y = sqlalchemy.Column(sqlalchemy.Integer)
     """Position of the client in the room, y coordinate"""
+
+    memory = sqlalchemy.Column(sqlalchemy.Integer)
+    """Total memory of the client, -1 if unknow"""
     
     
     def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count, pos_x, pos_y):
@@ -182,9 +186,10 @@ class Client(Base):
         self.last_refresh = datetime.datetime.now()
         self.pos_x = pos_x
         self.pos_y = pos_y
+        self.memory = -1;
     
     def __repr__(self):
-        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, last_busy: %s, last_refresh: %s pos_x: %d, pos_y: %d)>" % (
+        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, last_busy: %s, last_refresh: %s pos_x: %d, pos_y: %d, memory: %d)>" % (
                                             self.name,
                                             self.ip,
                                             self.mac,
@@ -199,7 +204,8 @@ class Client(Base):
                                             str(self.last_busy),
                                             str(self.last_refresh),
                                             self.pos_x,
-                                            self.pos_y
+                                            self.pos_y,
+                                            self.memory
                                             )
     
     def ping (self):
@@ -248,23 +254,12 @@ class Client(Base):
             if self.state < 5:
                 # the first time online
                 self.last_on = datetime.datetime.now()
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        try:
-            s.connect((self.ip, 100))
-        except:
-            self.state = 5
-            self.users = -1
-            debug_message(2,self.name+": tama not responding")
-            self.last_refresh = datetime.datetime.now()
-            session.commit()
-            return
-        else:
-            self.state = 7
-            time.sleep(1)
-            s.settimeout(10)
+                first_time = True
+            else:
+                first_time = False
+            s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
             try:
-                s.send("connected")
-                self.users = int(s.recv(1024).rstrip("\n"))
+                s.connect((self.ip, 100))
             except:
                 self.state = 5
                 self.users = -1
@@ -273,23 +268,54 @@ class Client(Base):
                 session.commit()
                 return
             else:
-                if self.users > 0:
-                    self.last_busy = datetime.datetime.now()
-            try:
-                s.send("temp0")
-                temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
-            except:
-                self.state = 5
-                self.users = -1
-                debug_message(2,self.name+": tama not responding")
+                self.state = 7
+                time.sleep(1)
+                s.settimeout(10)
+                try:
+                    s.send("connected")
+                    self.users = int(s.recv(1024).rstrip("\n"))
+                except:
+                    self.state = 5
+                    self.users = -1
+                    debug_message(2,self.name+": tama not responding")
+                    self.last_refresh = datetime.datetime.now()
+                    session.commit()
+                    return
+                else:
+                    if self.users > 0:
+                        self.last_busy = datetime.datetime.now()
+                try:
+                    s.send("temp0")
+                    temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
+                except:
+                    self.state = 5
+                    self.users = -1
+                    debug_message(2,self.name+": tama not responding")
+                    self.last_refresh = datetime.datetime.now()
+                    session.commit()
+                    return
+                else:
+                    self.temperatures.append(Temperature(datetime.datetime.now(),temp))
+                if first_time:
+                    try:
+                        s.send("memory")
+                        new_memory = int(s.recv(1024).rstrip("\n"))
+                    except:
+                        self.state = 5
+                        self.users = -1
+                        debug_message(2,self.name+": tama not responging")
+                        self.last_refresh = datetime.datetime.now()
+                        session.commit()
+                        return
+                    else:
+                        if new_memory != self.memory:
+                            debug_message(1,self.name+": memory from "+str(self.memory)+" to "+str(new_memory))
+                        self.memory = new_memory
+                        
+                s.send("quit")
+                s.close()
                 self.last_refresh = datetime.datetime.now()
                 session.commit()
-                return
-            self.temperatures.append(Temperature(datetime.datetime.now(),temp))
-            s.send("quit")
-            s.close()
-            self.last_refresh = datetime.datetime.now()
-            session.commit()
     
     def switch_on_simple(self):
         """

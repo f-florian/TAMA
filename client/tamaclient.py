@@ -41,10 +41,10 @@ tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
     debug = tama_config.getint("default","debug")
-    tama_dir = tama_config.getint("default","tama_dir")
-    pid_file_path = tama_config.getint("tamaclient","pid_file_path")
-    auth_db_path = tama_config.getint("tamaclient","auth_db_path")
-    auth_log_path = tama_config.getint("tamaclient","auth_log_path")
+    tama_dir = tama_config.get("default","tama_dir")
+    pid_file_path = tama_config.get("tamaclient","pid_file_path")
+    auth_db_path = tama_config.get("tamaclient","auth_db_path")
+    auth_log_path = tama_config.get("tamaclient","auth_log_path")
     port = tama_config.getint("tamaclient","port")
 except:
     print "[tamaclient] error while parsing "+TAMA_CONFIG_FILE
@@ -129,6 +129,26 @@ def temperature(n):
     (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",str(n)], stdout=subprocess.PIPE).communicate()
     return stdout
 
+def memory():
+    """
+    Return the total memory on this client
+
+    """
+    mem_file = open("/proc/meminfo","r")
+    target_line = ""
+    for line in mem_file:
+        if line.startswith("MemTotal"):
+            target_line = line
+            break
+        
+    try:
+        memory = int(line.split()[1])
+    except:
+        debugMessage(1,"Unable to read the total memory")
+        return -1
+    else:
+        return memory
+
 
 def connection(conn, start_event):
     """
@@ -152,6 +172,9 @@ def connection(conn, start_event):
         elif string == 'temp0':
             debugMessage(4,"execuiting temperature(0)")
             conn.send(str(temperature(0))+"\n")
+        elif string == 'memory':
+            debugMessage(4,"executing memory()")
+            conn.send(str(memory())+"\n")
         elif string == 'ciao':
             conn.send("Ciao anche a te\n")
         elif string == 'quit' or string == 'exit':
