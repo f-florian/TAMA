@@ -139,6 +139,8 @@ def examine(options):
                                     client.temperatures[-1].date)
         if client.pos_x != -1:
             print "%-16s %d,%d" % ("Position", client.pos_x, client.pos_y)
+        if client.memory != -1:
+            print "%-16s %d" % ("Memory",client.memory)
 
         print
     
