@@ -1,7 +1,7 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-# generate_index.py
+# web_index.py
 # This file is part of TAMA
 # 
 # Copyright (C) 2012 - Enrico Polesel
@@ -172,6 +172,7 @@ def generate_table():
     output += "   <th>Last off</th>"
     output += "   <th>Last busy</th>"
     output += "   <th>Last refresh</th>"
+    output += "   <th>Memory</th>"
     output += "  </tr>"    
     for client in tama.session.query(tama.Client):
         output += "  <tr>"
@@ -185,6 +186,7 @@ def generate_table():
         output += "   <td>"+str(client.last_off)+"</td>"
         output += "   <td>"+str(client.last_busy)+"</td>"
         output += "   <td>"+str(client.last_refresh)+"</td>"
+        output += "   <td>"+str(client.memory)+"</td>"
         output += "  </tr>"
     output += " </table>"
     return output
