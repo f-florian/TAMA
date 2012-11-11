@@ -308,7 +308,7 @@ class Client(Base):
                         session.commit()
                         return
                     else:
-                        if new_memory != self.memory:
+                        if (new_memory != self.memory) and (self.memory != -1):
                             debug_message(1,self.name+": memory from "+str(self.memory)+" to "+str(new_memory))
                         self.memory = new_memory
                         
