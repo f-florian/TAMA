@@ -284,6 +284,7 @@ debug_message(4,"Policy: "+str(rules))
 while (1):
     # main loop
     tama.refresh_data()
+    os.system(tama_dir+"web_index.py")
     num = compute_action(rules)
     check_always_on()
     debug_message(2,"delta client = "+str(num))
