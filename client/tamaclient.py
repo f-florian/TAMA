@@ -42,10 +42,10 @@ tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
     debug = tama_config.getint("default","debug")
-    tama_dir = tama_config.getint("default","tama_dir")
-    pid_file_path = tama_config.getint("tamaclient","pid_file_path")
-    auth_db_path = tama_config.getint("tamaclient","auth_db_path")
-    auth_log_path = tama_config.getint("tamaclient","auth_log_path")
+    tama_dir = tama_config.get("default","tama_dir")
+    pid_file_path = tama_config.get("tamaclient","pid_file_path")
+    auth_db_path = tama_config.get("tamaclient","auth_db_path")
+    auth_log_path = tama_config.get("tamaclient","auth_log_path")
     port = tama_config.getint("tamaclient","port")
 except:
     print "[tamaclient] error while parsing "+TAMA_CONFIG_FILE
