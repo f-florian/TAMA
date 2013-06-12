@@ -126,15 +126,20 @@ def examine(options):
         print "%-16s %s" % ("mac", str(client.mac))
         print "%-16s %d" % ("users", client.users_human())
         print "%-16s %s" % ("state", client.str_state())
-        print "%-16s %s" % ("auto_on", str(client.auto_on))
+        print "%-16s %s" % ("last_on", str(client.last_on))
         print "%-16s %s" % ("last_off", str(client.last_off))
+        print "%-16s %s" % ("last_busy", str(client.last_busy))
+        print "%-16s %s" % ("last_refresh", str(client.last_refresh))
+        print "%-16s %s" % ("auto_on", str(client.auto_on))
+        print "%-16s %s" % ("auto_off", str(client.auto_off))
         print "%-16s %s" % ("always_on", str(client.always_on))
         print "%-16s %s" % ("count", str(client.count))
-        print "%-16s %s" % ("last_on", str(client.last_on))
-        print "%-16s %s" % ("auto_off", str(client.auto_off))
         print "%-16s %d°C @ %s" % ("last temperature", 
                                     client.temperatures[-1].measure,
                                     client.temperatures[-1].date)
+        if client.pos_x != -1:
+            print "%-16s %d,%d" % ("Position", client.pos_x, client.pos_y)
+
         print
     
 
@@ -381,6 +386,72 @@ def get_state(default=None):
                 print "Please insert a valid numeber"
     return stateN
 
+def get_position(default_x=None,default_y=None):
+    """
+    Get a position
+    
+    First ask if the client has a position, then ask for that position
+    
+    """
+    if default_x is None and default_y is not None:
+        raise Exception("default_x is None and default_y is not None")
+    elif defautl_x is not None and default_y is None:
+        raise Exception("default_x is not None and default_y is None")
+    elif default_x is None and default_y is None:
+        request = ""
+    else:
+        try:
+            default_x_int = int(default_x)
+            default_x = str(default_x)
+            default_y_int = int(default_y)
+            default_y = str(default_y)
+        except:
+            debug_message(2,"get_position: invalid default arguments")
+            default_x = None
+            default_y = None
+            request_x = ""
+            request_y = ""
+        else:
+            request_x = "("+default_x+") "
+            request_y = "("+default_y+") "
+    while(1):
+        have_position = raw_input("Does this client have a position? ").strip()
+        try:
+            have_position = tama.string_to_bool(have_position)
+        except:
+            print "Please type yes or no"
+        else:
+            break
+    if have_position == false:
+        return (-1,-1)
+    else:
+        while(1):
+            pos_x = raw_input("X position "+request_x).strip()
+            if default_x is not None and pos_x=="":
+                pos_x = default_x
+            try:
+                pos_x = int(pos_x)
+                if pos_x < 0:
+                    raise Exception("Negative position")
+            except:
+                print "Please insert a positive (or null) integer"
+            else:
+                break
+        while(1):
+            pos_y = raw_input("Y position "+request_y).strip()
+            if default_y is not None and pos_y=="":
+                pos_y = default_y
+            try:
+                pos_y = int(pos_y)
+                if pos_y < 0:
+                    raise Exception("Negative position")
+            except:
+                print "Please insert a positive (or null) integer"
+            else:
+                break
+        return (pos_x,pos_y)
+
+    
 
 def add_string(dataString):
     """
@@ -395,6 +466,8 @@ def add_string(dataString):
     - auto_off (True/False)
     - always_on (True/Flase)
     - count (True/False)
+    - pos_x
+    - pos_y
     
     """
     dataArray = dataString.split(",")
@@ -406,8 +479,10 @@ def add_string(dataString):
     auto_off = tama.string_to_bool(dataArray[5])
     always_on = tama.string_to_bool(dataArray[6])
     count = tama.string_to_bool(dataArray[7])
+    pos_x = int(dataArray[8])
+    pos_y = int(dataArray[9])
 
-    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
+    tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count, pos_x, pos_y))
     tama.session.commit()
     print "Client "+name+" added"
 
@@ -424,6 +499,8 @@ def add_file(clientFile):
     - auto_off (True/False)
     - always_on (True/Flase)
     - count (True/False)
+    - pos_x
+    - pos_y
     
     """
     
@@ -448,6 +525,7 @@ def add_interactive():
     auto_off = get_bool("Auto off",True)
     always_on = get_bool("Always on",False)
     count = get_bool("Count",True)
+    (pos_x,pos_y) = get_position()
     
     tama.session.add(tama.Client(name, ip, mac, state, auto_on, auto_off, always_on, count))
     tama.session.commit()
@@ -494,6 +572,8 @@ def edit(options):
         client.always_on = get_bool("Always on",client.always_on)
     if options.all or options.count:
         client.count = get_bool("Count",client.count)
+    if options.all or options.pos:
+        (client.pos_x, client.pos_y) = get_position(client.pos_x,client.pos_y)
     
     tama.session.commit()
 
@@ -510,6 +590,8 @@ def edit_array(client,dataArray):
     - auto_off (True/False)
     - always_on (True/Flase)
     - count (True/False)
+    - pos_x
+    - pos_y
     
     """
     client.name = dataArray[0]
@@ -520,6 +602,8 @@ def edit_array(client,dataArray):
     client.auto_off = tama.string_to_bool(dataArray[5])
     client.always_on = tama.string_to_bool(dataArray[6])
     client.count = tama.string_to_bool(dataArray[7])
+    client.pos_x = int(dataArray[8])
+    client.pos_y = int(dataArray[9])
     tama.session.commit()
 
 def editfile(options):
@@ -538,6 +622,8 @@ def editfile(options):
     - auto_off (True/False)
     - always_on (True/Flase)
     - count (True/False)
+    - pos_x
+    - pos_y
     
     The client named name will be edit
     If no client named name is found and option all is
@@ -601,6 +687,20 @@ def delete(options):
         print "More that one client detected!"
         print "If you want to delete them all give the force option"
 
+def diagnostic(options):
+    """
+    Main function for the diagnostic option
+    
+    This function run the diagnostic function from tamascommon
+    
+    """
+    try:
+        tama.diagnostic(options.level)
+    except Exception, e:
+        print e
+    else:
+        print "Nothing strange found"
+
 # Parser definitions
 mainParser = argparse.ArgumentParser(description="A tool to query tama database")
 mainParser.add_argument("action",
@@ -614,6 +714,7 @@ mainParser.add_argument("action",
                                  "edit",
                                  "editfile",
                                  "delete",
+                                 "diagnostic",
                                     ],
                         help="What tamaquery have to do")
 mainParser.add_argument("args",
@@ -728,6 +829,9 @@ editParserTargetGroup.add_argument("--always_on",
 editParserTargetGroup.add_argument("--count",
                                    help="edit count",
                                    action="store_true")
+editParserTargetGroup.add_argument("--pos",
+                                   help="edit position",
+                                   action="store_true")
 
 editfileParser = argparse.ArgumentParser(description="Edit the informations\
                                          about the client from a file and\
@@ -752,6 +856,12 @@ deleteParser.add_argument("name",
                        help="The name of the client to delete")
 deleteParser.add_argument("--force","-f",
                        action="store_true")
+
+diagnosticParser = argparse.ArgumentParser(description="Run a diagnostic on tama software",
+                                           prog = "tamaquery")
+diagnosticParser.add_argument("level",
+                              help="The level of the diagnostic",
+                              type=int)
                        
 
 mainNS = mainParser.parse_args()
@@ -784,3 +894,6 @@ elif mainNS.action=="editfile":
 elif mainNS.action=="delete":
     deleteNS = deleteParser.parse_args(mainNS.args)
     delete(deleteNS)
+elif mainNS.action=="diagnostic":
+    diagnosticNS = diagnosticParser.parse_args(mainNS.args)
+    diagnostic(diagnosticNS)

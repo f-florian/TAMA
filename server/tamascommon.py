@@ -8,7 +8,8 @@ run on server
 It provides:
  - definition of common classes and integration with sqlalchemy
  - function to refresh database data
- - function to switch on or off clients
+ - functions to switch on or off clients
+ - functions 
  - some stupid function to query the database
 
 """
@@ -18,18 +19,18 @@ It provides:
 # 
 # Copyright (C) 2012 - Enrico Polesel
 # 
-# tama is free software; you can redistribute it and/or modify
+# TAMA is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 2 of the License, or
 # any later version.
 # 
-# tama is distributed in the hope that it will be useful,
+# TAMA is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
 # 
 # You should have received a copy of the GNU General Public License
-# along with tama. If not, see <http://www.gnu.org/licenses/>.
+# along with TAMA. If not, see <http://www.gnu.org/licenses/>.
 
 # In this file there is some classes used by tamaserver
 # It also start the sqlalchemy engine (and session?)
@@ -82,25 +83,32 @@ class Client(Base):
     Save informations about one client
     
     Attributes:
-        id          The primary key for database
-        name        The name of the client
-        ip          The ip address of the client
-        mac         The mac address of the client
-        users       The number of users connected to the client
-        state       The state of the client (numerical aliases)
-                        0: morto (manuale)
-                        1: spento, accensione remota non funzionante
-                        2: spento (non da tamaserver)
-                        3: spento da tamaserver
-                        4: non gestito da tamaserver
-                        5: acceso, tamaclient non funzionante
-                        7: acceso
-        auto_on     Can the client be switched on automatically?
-        auto_off    Can the client be switched off automatically?
-        always_on   Have the client to be always on?
-        count       Add this client to the list of free clients
-        last_on     The last time that the client was see online
-        last_off    The last time that the client was see offline
+        id              The primary key for database
+        name            The name of the client
+        ip              The ip address of the client
+        mac             The mac address of the client
+        users           The number of users connected to the client
+        state           The state of the client (numerical aliases)
+                            0: morto (manuale)
+                            1: spento, accensione remota non funzionante
+                            2: spento (non da tamaserver)
+                            3: spento da tamaserver
+                            4: non gestito da tamaserver
+                            5: acceso, tamaclient non funzionante
+                            7: acceso
+        auto_on         Can the client be switched on automatically?
+        auto_off        Can the client be switched off automatically?
+        always_on       Have the client to be always on?
+        count           Add this client to the list of free clients
+        last_on         The last time that the client was see online
+        last_off        The last time that the client was see offline
+        last_busy       The last time that the client was see busy
+        last_refresh    The last time that client data was refreshed
+        pos_x           Position of the client in the room, x coordinate
+        pos_y           Position of the client in the room, y coordinate
+        
+    
+
         
     """
     __tablename__ = 'clients'
@@ -140,9 +148,21 @@ class Client(Base):
     
     last_off = sqlalchemy.Column(sqlalchemy.DateTime)
     """The last time that the client was see offline"""
+
+    last_busy = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that the client was see busy"""
+
+    last_refresh = sqlalchemy.Column(sqlalchemy.DateTime)
+    """The last time that client data was refreshed"""
+    
+    pos_x = sqlalchemy.Column(sqlalchemy.Integer)
+    """Position of the client in the room, x coordinate"""
+    
+    pos_y = sqlalchemy.Column(sqlalchemy.Integer)
+    """Position of the client in the room, y coordinate"""
     
     
-    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count):
+    def __init__ (self, name, ip, mac, state, auto_on, auto_off, always_on, count, pos_x, pos_y):
 
         self.name = name
         self.ip = ip
@@ -158,9 +178,13 @@ class Client(Base):
         self.count = count
         self.last_on = datetime.datetime.now()
         self.last_off = datetime.datetime.now()
+        self.last_busy = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
+        self.pos_x = pos_x
+        self.pos_y = pos_y
     
     def __repr__(self):
-        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s)>" % (
+        return "<Client(name: '%s', ip: '%s', mac: '%s',users: %d, state: %d, auto_on: %s, auto_off: %s, always_on: %s, count: %s, last_on: %s, last_off: %s, last_busy: %s, last_refresh: %s pos_x: %d, pos_y: %d)>" % (
                                             self.name,
                                             self.ip,
                                             self.mac,
@@ -171,7 +195,11 @@ class Client(Base):
                                             self.always_on,
                                             self.count,
                                             str(self.last_on),
-                                            str(self.last_off)
+                                            str(self.last_off),
+                                            str(self.last_busy),
+                                            str(self.last_refresh),
+                                            self.pos_x,
+                                            self.pos_y
                                             )
     
     def ping (self):
@@ -212,6 +240,7 @@ class Client(Base):
             self.last_off = datetime.datetime.now()
         if (not online):
             debug_message(3,"Client "+self.name+" not online")
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             return
         
@@ -224,8 +253,10 @@ class Client(Base):
             s.connect((self.ip, 100))
         except:
             self.state = 5
-            self.user = -1
+            self.users = -1
             debug_message(2,self.name+": tama not responding")
+            self.last_refresh = datetime.datetime.now()
+            session.commit()
             return
         else:
             self.state = 7
@@ -236,22 +267,28 @@ class Client(Base):
                 self.users = int(s.recv(1024).rstrip("\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
+            else:
+                if self.users > 0:
+                    self.last_busy = datetime.datetime.now()
             try:
                 s.send("temp0")
                 temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
             except:
                 self.state = 5
-                self.user = -1
+                self.users = -1
                 debug_message(2,self.name+": tama not responding")
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 return
             self.temperatures.append(Temperature(datetime.datetime.now(),temp))
             s.send("quit")
             s.close()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
     
     def switch_on_simple(self):
@@ -283,6 +320,7 @@ class Client(Base):
         if online:
             self.state=7
             self.last_on=datetime.datetime.now()
+            self.last_refresh = datetime.datetime.now()
             session.commit()
             session.close()
             return True
@@ -294,12 +332,14 @@ class Client(Base):
             if online:
                 self.state=7
                 self.last_on=datetime.datetime.now()
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return True
             else:
                 debug_message(2,"Non riesco ad accedere "+self.name)
                 self.state = 1
+                self.last_refresh = datetime.datetime.now()
                 session.commit()
                 session.close()
                 return False
@@ -329,6 +369,7 @@ class Client(Base):
         self.state = 3
         self.users = -2
         self.last_off = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
         session.commit()
     
     def switch(self,state):
@@ -385,8 +426,49 @@ class Client(Base):
         session.delete(self)
         session.commit()
         
-    
-
+    def consistency_check_users(self, correct=False):
+        """
+        Check for all clients if the number of user reported in consistent
+        whith the client state
+        
+        """
+        if self.state <= 3:
+            if self.users != -2:
+                if correct:
+                    debug_message(1,"Correcting the number of users in client "+self.name)
+                    self.users = -2
+                else:
+                    raise Exception("Found inconsistency in user number of client "+client.name)
+        elif self.state <=5:
+            if self.users != -1:
+                if correct:
+                    debug_message(1,"Correcting the number of users in client "+self.name)
+                    self.users = -1
+                else:
+                    raise Exception("Found inconsistency in user number of client "+client.name)
+        
+    def consistency_check_always_on(self, correct=False):
+        """
+        If always_in is true then check if auto_on is true and
+        auto_off is false
+        
+        """
+        if self.always_on:
+            if not auto_on:
+                if correct:
+                    debug_message(1,"Correcting auto_on in client "+client.name)
+                    self.auto_on = True
+                else:
+                    raise Exception("Auto_on is false in always on client "+client.name)
+            if auto_off:
+                if correct:
+                    debug_message(1,"Correcting auto_off in client "+client.name)
+                    self.auto_off = False
+                else:
+                    raise Exception("Auto_off is true in always on client "+client.name)
+        
+                                
+        
 class AuthEvent(Base):
     """
     Save information about auth event (connection and disconenction of
@@ -578,3 +660,124 @@ def query_name(name):
     #~ else:
         #~ return temperatures
     #~ 
+
+def max_x():
+    """
+    Returns the maximum x coordinate of all clients
+    
+    """
+    return session.query(sqlalchemy.func.max(Client.pos_x)).scalar()
+
+def max_y():
+    """
+    Returns the maximum y coordinate of all clients
+    
+    """
+    return session.query(sqlalchemy.func.max(Client.pos_y)).scalar()
+
+
+
+
+def db_consistency_check_positions():
+    """
+    Check if there are two (or more) clients in the same position
+    
+    """
+    mem = []
+    for x,y in session.query(Client.pos_x, Client.pos_y):
+        debug_message(3,"Read position "+str(x)+","+str(y))
+        if x == -1:
+            continue
+        else:
+            if (x,y) in mem:
+                debug_message(1,"Problem in position "+str(x)+","+str(y))                                 
+                raise Exception("Two clients are in the same position!")
+            else:
+                mem.append((x,y))
+    
+
+def db_consistency_check_ip():
+    """
+    Check if there are two (or more) client whith the same ip address.
+    Also check if all IP are valid
+    
+    """
+    mem = []
+    for ip, in session.query(Client.ip):
+        debug_message(3,"Read IP "+ip)
+        validate_ip(ip)
+        if ip in mem:
+            debug_message(1,"IP "+ip+" duplicated!")
+            raise Exception("Two clients have the same IP!")
+        else:
+            mem.append(ip)
+    
+def db_consistency_check_mac():
+    """
+    Check if there are two (or more) client whith the same mac address.
+    Also check if all mac are valid
+    
+    """
+    mem = []
+    for mac, in session.query(Client.mac):
+        debug_message(3,"Read MAC "+mac)
+        validate_mac(mac)
+        if mac in mem:
+            debug_message(1,"MAC "+mac+" duplicated!")
+            raise Exception("Two clients have the same MAC!")
+        else:
+            mem.append(mac)
+
+def db_consistency_check_users(correct=False):
+    """
+    Check for all clients if the number of user reported in consistent
+    with the client state
+    
+    """
+    for client in session.query(Client):
+        client.consistency_check_users(correct)
+    
+def db_consistency_check_always_on(correct=False):
+    """
+    Check for all client with always_on if auto_on is true and aut_off
+    is false
+    
+    """
+    for client in session.query(Client).filter(Client.always_on == True):
+        client.consistency_check_always_on(correct)
+    
+
+def diagnostic(level=3):
+    """
+    Run a diagnostic on tamaserver.
+    
+    Tama will run every diagnostic whith level less or equal of level
+    
+    level 1:
+    level 2:
+    level 3:
+    level 4:
+    level 5:
+    
+    """
+    debug_message(4,"Initializing level "+str(level)+" diagnostic")
+    try:
+        int(level)
+    except:
+        raise Exception("Diagnostics level must be an integer!")
+    else:
+        if level<1 or level>5:
+            raise Exception("Diagnostics level must be in 1..5!")
+    if level <= 5:
+        db_consistency_check_ip()
+        db_consistency_check_mac()
+    if level <= 4:
+        db_consistency_check_positions()
+    if level <= 3:
+        db_consistency_check_always_on()
+        db_consistency_check_users()
+    if level <= 2:
+        pass
+    if level == 1:
+        pass
+    

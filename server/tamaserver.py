@@ -207,10 +207,14 @@ def decrease_free_client(num):
     num -- the number of client to switch on
     
     """
-    available = tama.session.query(tama.Client).filter(tama.Client.state == 7).filter(
-                                    tama.Client.users == 0).filter(
-                                    tama.Client.auto_off==1).filter(
-                                    tama.Client.always_on==0).order_by(tama.Client.last_on).all()
+    available = tama.session.query(tama.Client).\
+        filter(tama.Client.state == 7).\
+        filter(tama.Client.users == 0).\
+        filter(tama.Client.auto_off == 1).\
+        filter(tama.Client.always_on == 0).\
+        filter(tama.Client.last_busy < datetime.datetime.now()-datetime.timedelta(minutes=10)).\
+        order_by(tama.Client.last_on).\
+        all()
     for client in available:
         if num <= 0:
             break
@@ -229,9 +233,11 @@ def increase_free_client(num):
     num -- the number of client to switch on
     
     """
-    available = tama.session.query(tama.Client).filter(sqlalchemy.or_(tama.Client.state == 2,
-                                                    tama.Client.state == 3)).filter(
-                                    tama.Client.auto_on==1).order_by(tama.Client.last_off).all()
+    available = tama.session.query(tama.Client).\
+        filter(sqlalchemy.or_(tama.Client.state==2,tama.Client.state==3)).\
+        filter(tama.Client.auto_on==1).\
+        order_by(tama.Client.last_off).\
+        all()
     
     i=0
     for client in available:
@@ -248,16 +254,16 @@ def check_always_on():
     them on 
     
     """
-    targets = tama.session.query(tama.Client).filter(
-                            tama.Client.always_on==True).filter(
-                            tama.Client.state < 4).filter(
-                            tama.Client.state > 0).all()
+    targets = tama.session.query(tama.Client).\
+        filter(tama.Client.always_on==True).\
+        filter(tama.Client.state < 4).\
+        filter(tama.Client.state > 0).\
+        all()
     for client in targets:
-        debugMessage(2,"Turning on "+client.name+" for always_on")
+        debug_message(2,"Turning on "+client.name+" for always_on")
         client.switch_on_multithreading()
     return len(targets)
     
-
 
 def sig_exit(signum, frame):
     """
