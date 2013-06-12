@@ -109,7 +109,7 @@ def connectedUser():
     #~ opened = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='open').filter(Event.user != 'lightdm').count()
     #~ closed = session.query(Event.action).filter(Event.id > start_id).filter(Event.action=='close').filter(Event.user != 'lightdm').count()
     #~ return opened - closed
-    (stdout, stderr) = subprocess.Popen([TAMA_DIR+"tamauserar51.sh",""], stdout=subprocess.PIPE).communicate()
+    (stdout, stderr) = subprocess.Popen([tama_dir+"tamauserar51.sh",""], stdout=subprocess.PIPE).communicate()
     return stdout
 
 def temperature(n):
