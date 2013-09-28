@@ -11,7 +11,7 @@
 # Description:       Enable service provided by tamaclient from the tama suite.
 ### END INIT INFO
 
-PROG="tamaclientar51"
+PROG="tamaclient"
 PROG_PATH="/usr/local/sbin/tama"
 PID_PATH="/var/run"
 
