@@ -395,7 +395,7 @@ def get_position(default_x=None,default_y=None):
     """
     if default_x is None and default_y is not None:
         raise Exception("default_x is None and default_y is not None")
-    elif defautl_x is not None and default_y is None:
+    elif default_x is not None and default_y is None:
         raise Exception("default_x is not None and default_y is None")
     elif default_x is None and default_y is None:
         request = ""
@@ -422,7 +422,7 @@ def get_position(default_x=None,default_y=None):
             print "Please type yes or no"
         else:
             break
-    if have_position == false:
+    if have_position == False:
         return (-1,-1)
     else:
         while(1):
