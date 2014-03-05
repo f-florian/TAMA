@@ -260,7 +260,7 @@ def check_always_on():
         filter(tama.Client.state > 0).\
         all()
     for client in targets:
-        debugMessage(2,"Turning on "+client.name+" for always_on")
+        debug_message(2,"Turning on "+client.name+" for always_on")
         client.switch_on_multithreading()
     return len(targets)
     
