@@ -187,7 +187,7 @@ def compute_action(rules):
     min_ = min_free(rules, datetime.datetime.now().time())
     max_ = max_free(rules, datetime.datetime.now().time())
     free = tama.session.query(tama.Client).filter(
-                            tama.Client.count==1).filter(
+                            tama.Client.count==True).filter(
                             tama.Client.state==7).filter(
                             tama.Client.users==0).count()
     if free < min_:
@@ -210,8 +210,8 @@ def decrease_free_client(num):
     available = tama.session.query(tama.Client).\
         filter(tama.Client.state == 7).\
         filter(tama.Client.users == 0).\
-        filter(tama.Client.auto_off == 1).\
-        filter(tama.Client.always_on == 0).\
+        filter(tama.Client.auto_off == True).\
+        filter(tama.Client.always_on == False).\
         filter(tama.Client.last_busy < datetime.datetime.now()-datetime.timedelta(minutes=10)).\
         order_by(tama.Client.last_on).\
         all()
@@ -235,7 +235,7 @@ def increase_free_client(num):
     """
     available = tama.session.query(tama.Client).\
         filter(sqlalchemy.or_(tama.Client.state==2,tama.Client.state==3)).\
-        filter(tama.Client.auto_on==1).\
+        filter(tama.Client.auto_on==True).\
         order_by(tama.Client.last_off).\
         all()
     
