@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 # tamaserver.py
@@ -30,6 +30,7 @@ import sqlalchemy
 import sqlalchemy.orm
 import ConfigParser
 
+
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 #debug = 4
@@ -39,6 +40,7 @@ TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
+    """ reading the config file (tama.ini)  """
     debug = tama_config.getint("default","debug")
     #tama_dir = tama_config.get("default","tama_dir")
     
@@ -50,12 +52,14 @@ except:
     exit(2)
 
 try:
+    """ importing tamascommon module """
     import tamascommon as tama
 except:
     print "[tamaserver] error while importing tamascommon"
     exit(2)
 
 def debug_message (level, msg):
+    """ print msg if debug level is high enough"""
     if level <=debug:
         print "[Tamaserver - debug] "+str(msg)
 
@@ -201,7 +205,7 @@ def compute_action(rules):
 
 def decrease_free_client(num):
     """
-    Try to switch on num client
+    Try to switch off num client
     
     Keyword arguments:
     num -- the number of client to switch on
@@ -282,7 +286,7 @@ rules = parse_free_policy(free_policy_file)
 debug_message(4,"Policy: "+str(rules))
 
 while (1):
-    # main loop
+    # main loop    
     tama.refresh_data()
     num = compute_action(rules)
     check_always_on()

@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python2
 # -*- coding: utf-8 -*-
 
 """
@@ -41,7 +41,7 @@ import sqlalchemy.ext
 import sqlalchemy.ext.declarative
 import sqlalchemy.orm
 import thread
-import socket
+#import socket
 #import signal
 import subprocess
 import datetime
@@ -55,8 +55,8 @@ _debug = 0
 #TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
 
 def debug_message (level, msg):
-    if level <=_debug:
-        print "[Tamascommon - debug] "+str(msg)
+    #if level <=_debug:
+    print "[" + str(datetime.datetime.now()) + "] [Tamascommon - debug] "+str(msg)
 
 
 debug_message(4,"parsing "+TAMA_CONFIG_FILE)
@@ -216,8 +216,7 @@ class Client(Base):
             if "1 received" in line:
                 return True
         return False
-        
-        
+    
     def is_online(self):
         """
         Check if the client is online
@@ -248,49 +247,37 @@ class Client(Base):
             if self.state < 5:
                 # the first time online
                 self.last_on = datetime.datetime.now()
-        s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
-            s.connect((self.ip, 100))
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.name], stdout=subprocess.PIPE).communicate()
+            self.users=int(stdout.rstrip("\n"))
         except:
             self.state = 5
             self.users = -1
-            debug_message(2,self.name+": tama not responding")
+            debug_message(2,self.name+": ssh not working (users control)")
             self.last_refresh = datetime.datetime.now()
             session.commit()
             return
         else:
-            self.state = 7
-            time.sleep(1)
-            s.settimeout(10)
-            try:
-                s.send("connected")
-                self.users = int(s.recv(1024).rstrip("\n"))
-            except:
-                self.state = 5
-                self.users = -1
-                debug_message(2,self.name+": tama not responding")
-                self.last_refresh = datetime.datetime.now()
-                session.commit()
-                return
-            else:
-                if self.users > 0:
-                    self.last_busy = datetime.datetime.now()
-            try:
-                s.send("temp0")
-                temp = float(s.recv(1024).rstrip().rstrip("°C\n"))
-            except:
-                self.state = 5
-                self.users = -1
-                debug_message(2,self.name+": tama not responding")
-                self.last_refresh = datetime.datetime.now()
-                session.commit()
-                return
-            self.temperatures.append(Temperature(datetime.datetime.now(),temp))
-            s.send("quit")
-            s.close()
+            if self.users > 0:
+                self.last_busy = datetime.datetime.now()
+    
+        try:
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.name], stdout=subprocess.PIPE).communicate()
+            temp = float(stdout.rstrip().rstrip("°C\n"))
+        except:
+            self.state = 5
+            #self.users = -1
+            debug_message(2,self.name+": ssh not working (temperature control)")
             self.last_refresh = datetime.datetime.now()
             session.commit()
+            return
     
+        self.temperatures.append(Temperature(datetime.datetime.now(),temp))
+    
+        self.last_refresh = datetime.datetime.now()
+        session.commit()
+
+
     def switch_on_simple(self):
         """
         Send a wakeonlan magic packet to the client and exit
@@ -358,19 +345,19 @@ class Client(Base):
     
     def switch_off(self):
         """
-        Try to switch on target
+        Try to switch off target
         
         Keyword arguments:
         target -- the object related to the client to switch on
         
         """
         debug_message(2,"Switching off client "+self.name)
-        os.system("ssh "+self.ip+" shutdown -h now")
-        self.state = 3
-        self.users = -2
-        self.last_off = datetime.datetime.now()
-        self.last_refresh = datetime.datetime.now()
-        session.commit()
+        #os.system("ssh "+self.ip+" shutdown -h now")
+        #self.state = 3
+        #self.users = -2
+        #self.last_off = datetime.datetime.now()
+        #self.last_refresh = datetime.datetime.now()
+        #session.commit()
     
     def switch(self,state):
         """
