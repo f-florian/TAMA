@@ -289,13 +289,7 @@ debug_message(4,"Policy: "+str(rules))
 while (1):
     # main loop    
     tama.refresh_data()
-    print 'a'
-    sys.stdout.flush()
-    sys.stderr.flush()
     num = compute_action(rules)
-    print 'b'
-    sys.stdout.flush()
-    sys.stderr.flush()
     check_always_on()
     debug_message(2,"delta client = "+str(num))
     if num < 0:

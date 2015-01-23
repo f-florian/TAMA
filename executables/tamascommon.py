@@ -274,9 +274,6 @@ class Client(Base):
             session.commit()
             return
             
-        print 'z'
-        sys.stdout.flush()
-        sys.stderr.flush()
         self.temperatures.append(Temperature(datetime.datetime.now(),temp))
     
         self.last_refresh = datetime.datetime.now()
@@ -357,12 +354,12 @@ class Client(Base):
         
         """
         debug_message(2,"Switching off client "+self.name)
-        #os.system("ssh "+self.ip+" shutdown -h now")
-        #self.state = 3
-        #self.users = -2
-        #self.last_off = datetime.datetime.now()
-        #self.last_refresh = datetime.datetime.now()
-        #session.commit()
+        os.system("ssh "+self.ip+" shutdown -h now")
+        self.state = 3
+        self.users = -2
+        self.last_off = datetime.datetime.now()
+        self.last_refresh = datetime.datetime.now()
+        session.commit()
     
     def switch(self,state):
         """
