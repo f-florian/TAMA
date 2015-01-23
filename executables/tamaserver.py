@@ -29,6 +29,7 @@ import time
 import sqlalchemy
 import sqlalchemy.orm
 import ConfigParser
+import sys
 
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
@@ -65,7 +66,7 @@ def debug_message (level, msg):
 
 def start_pid():
     if os.path.exists(pid_file_path):
-        debug_message(1, "Tamaserver is already running, exiting")
+        tama.debug_message(1, "Tamaserver is already running, exiting")
         exit(0)
     else:
         pid_file = open(pid_file_path, "w")
@@ -288,13 +289,19 @@ debug_message(4,"Policy: "+str(rules))
 while (1):
     # main loop    
     tama.refresh_data()
+    print 'a'
+    sys.stdout.flush()
+    sys.stderr.flush()
     num = compute_action(rules)
+    print 'b'
+    sys.stdout.flush()
+    sys.stderr.flush()
     check_always_on()
     debug_message(2,"delta client = "+str(num))
     if num < 0:
         decrease_free_client(-num)
     elif num > 0:
         increase_free_client(num)
-    time.sleep(5*60 - ( 60*(datetime.datetime.now().minute%5) + datetime.datetime.now().second + 1 ) )
+    time.sleep(5*60)
 
 
