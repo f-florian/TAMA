@@ -248,7 +248,7 @@ class Client(Base):
                 self.last_on = datetime.datetime.now()
             self.state=7
         try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.ip], stdout=subprocess.PIPE).communicate()
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.name)], stdout=subprocess.PIPE).communicate()
             self.users=int(stdout.rstrip("\n"))
         except:
             self.state = 5
@@ -262,7 +262,7 @@ class Client(Base):
                 self.last_busy = datetime.datetime.now()
     
         try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.ip], stdout=subprocess.PIPE).communicate()
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.name], stdout=subprocess.PIPE).communicate()
             temp = float(stdout.rstrip().rstrip("°C\n"))
         except:
             self.state = 5
@@ -276,6 +276,7 @@ class Client(Base):
     
         self.last_refresh = datetime.datetime.now()
         session.commit()
+        sys.stdout.flush()
 
 
     def switch_on_simple(self):
