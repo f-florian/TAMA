@@ -292,6 +292,7 @@ while (1):
     num = compute_action(rules)
     check_always_on()
     debug_message(2,"delta client = "+str(num))
+    sys.stdout.flush()
     if num < 0:
         decrease_free_client(-num)
     elif num > 0:
