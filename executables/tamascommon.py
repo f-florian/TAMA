@@ -52,8 +52,6 @@ import sys
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
 _debug = 0
-#MAIN_DB_PATH = "main.db"
-#TAMA_DIR = "/afs/uz.sns.it/user/enrico/private/tama/"
 
 def debug_message (level, msg):
     #if level <=_debug:
@@ -250,7 +248,7 @@ class Client(Base):
                 self.last_on = datetime.datetime.now()
             self.state=7
         try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.name], stdout=subprocess.PIPE).communicate()
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.ip], stdout=subprocess.PIPE).communicate()
             self.users=int(stdout.rstrip("\n"))
         except:
             self.state = 5
@@ -264,7 +262,7 @@ class Client(Base):
                 self.last_busy = datetime.datetime.now()
     
         try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.name], stdout=subprocess.PIPE).communicate()
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.ip], stdout=subprocess.PIPE).communicate()
             temp = float(stdout.rstrip().rstrip("°C\n"))
         except:
             self.state = 5
