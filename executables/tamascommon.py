@@ -47,6 +47,7 @@ import subprocess
 import datetime
 import time
 import ConfigParser
+import sys
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
@@ -247,6 +248,7 @@ class Client(Base):
             if self.state < 5:
                 # the first time online
                 self.last_on = datetime.datetime.now()
+            self.state=7
         try:
             (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.name], stdout=subprocess.PIPE).communicate()
             self.users=int(stdout.rstrip("\n"))
@@ -271,7 +273,10 @@ class Client(Base):
             self.last_refresh = datetime.datetime.now()
             session.commit()
             return
-    
+            
+        print 'z'
+        sys.stdout.flush()
+        sys.stderr.flush()
         self.temperatures.append(Temperature(datetime.datetime.now(),temp))
     
         self.last_refresh = datetime.datetime.now()
@@ -386,7 +391,7 @@ class Client(Base):
         elif self.state==4:
             return "Non gestito da tamaserver"
         elif self.state==5:
-            return "Acceso, tamaclient non funzionante"
+            return "Acceso, ssh non funzionante"
         elif self.state==7:
             return "Acceso"
         else:
