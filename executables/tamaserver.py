@@ -62,7 +62,7 @@ except:
 def debug_message (level, msg):
     """ print msg if debug level is high enough"""
     if level <=debug:
-        print "[Tamaserver - debug] "+str(msg)
+        print "[" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "] [Tamaserver - debug] "+str(msg)
 
 def start_pid():
     if os.path.exists(pid_file_path):
