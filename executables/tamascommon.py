@@ -54,7 +54,7 @@ _debug = 0
 
 def debug_message (level, msg):
     #if level <=_debug:
-    print "[" + str(datetime.datetime.now()) + "] [Tamascommon - debug] "+str(msg)
+    print "[" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "] [Tamascommon - debug] "+str(msg)
 
 
 debug_message(4,"parsing "+TAMA_CONFIG_FILE)
@@ -247,32 +247,23 @@ class Client(Base):
                 self.last_on = datetime.datetime.now()
             self.state=7
         try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamauser.sh",self.ip], stdout=subprocess.PIPE).communicate()
-            self.users=int(stdout.rstrip("\n"))
+            (stdout, stderr) = subprocess.Popen([tama_dir+"tamacheck.sh",self.ip], stdout=subprocess.PIPE).communicate()
+            u=stdout.split()[0]
+            self.users=int(u)
+            t=stdout.split()[1].rstrip("°C")
+            temp = float(t)
         except:
             self.state = 5
             self.users = -1
-            debug_message(2,self.name+": ssh not working (users control)")
+            debug_message(2,self.name+": ssh not working")
             self.last_refresh = datetime.datetime.now()
             session.commit()
             return
         else:
             if self.users > 0:
                 self.last_busy = datetime.datetime.now()
-    
-        try:
-            (stdout, stderr) = subprocess.Popen([tama_dir+"tamatemp.sh",self.ip], stdout=subprocess.PIPE).communicate()
-            temp = float(stdout.rstrip().rstrip("°C\n"))
-        except:
-            self.state = 5
-            #self.users = -1
-            debug_message(2,self.name+": ssh not working (temperature control)")
-            self.last_refresh = datetime.datetime.now()
-            session.commit()
-            return
-            
+                
         self.temperatures.append(Temperature(datetime.datetime.now(),temp))
-    
         self.last_refresh = datetime.datetime.now()
         session.commit()
 
