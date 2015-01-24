@@ -30,7 +30,7 @@ import datetime
 #~ import sqlalchemy.orm
 import ConfigParser
 # import argparse
-# import sys
+import sys
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
@@ -38,7 +38,7 @@ tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
 try:
     debug = tama_config.getint("default","debug")
-    #tama_dir = tama_config.get("default","tama_dir")
+    tama_dir = tama_config.get("default","tama_dir")
     index_target = tama_config.get("tamaweb","index_target")
 
 except:
@@ -46,6 +46,7 @@ except:
     print "[tamaweb] exiting..."
 
 try:
+    sys.path.append(tama_dir)
     import tamascommon as tama
 except:
     print "[tamaweb] error while importing tamascommon"
@@ -200,7 +201,7 @@ def generate_body():
     """
     output = ""
     output += "<body>\n"
-    output += " <h1 align=\"center\">TAMA master system diplay</h1>\n"
+    output += " <h1 align=\"center\">TAMA master system display</h1>\n"
     output += generate_diagram()
     output += generate_table()
     output += ""
@@ -212,7 +213,7 @@ def generate_body():
 def main():
     output_file = open(index_target,"w")
     output_file.write("<html>\n")
-    output_file.write(generate_header("TAMA - master systems display"))
+    output_file.write(generate_header("TAMA - master system display"))
     output_file.write(generate_body())
     output_file.write("</html>\n")
     output_file.close()
