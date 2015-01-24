@@ -31,6 +31,8 @@ import sqlalchemy.orm
 import ConfigParser
 import sys
 
+print "tamaserver starting"
+sys.stdout.flush()
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
@@ -235,9 +237,14 @@ def increase_free_client(num):
         filter(tama.Client.auto_on==True).\
         order_by(tama.Client.last_off).\
         all()
+    outofservice=tama.session.query(tama.Client).\
+        filter(tama.Client.state==1).\
+        filter(tama.Client.auto_on==True).\
+        order_by(tama.Client.last_off).\
+        all()
     
     i=0
-    for client in available:
+    for client in available+outofservice:
         if i>=num:
             break
         tama.debug_message(2,"Accendo "+client.name)
