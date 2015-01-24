@@ -34,16 +34,13 @@ import sys
 
 TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 
-#debug = 4
-#pid_file_path = "tamaserver.pid"
-#free_policy_file = "free_policy.ini"
-
 tama_config = ConfigParser.ConfigParser()
 tama_config.read(TAMA_CONFIG_FILE)
+
 try:
     """ reading the config file (tama.ini)  """
     debug = tama_config.getint("default","debug")
-    #tama_dir = tama_config.get("default","tama_dir")
+    tama_dir = tama_config.get("default","tama_dir")
     
     pid_file_path = tama_config.get("tamaserver","pid_file_path")
     free_policy_file = tama_config.get("tamaserver","free_policy_file")
@@ -58,11 +55,6 @@ try:
 except:
     print "[tamaserver] error while importing tamascommon"
     exit(2)
-
-def debug_message (level, msg):
-    """ print msg if debug level is high enough"""
-    if level <=debug:
-        print "[" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "] [Tamaserver - debug] "+str(msg)
 
 def start_pid():
     if os.path.exists(pid_file_path):
@@ -113,7 +105,7 @@ def parse_free_policy(source):
     
     """
     
-    debug_message(4,"parsing "+free_policy_file)
+    tama.debug_message(4,"parsing "+free_policy_file)
     free_config = ConfigParser.ConfigParser()
     free_config.read(source)
     container = []
@@ -121,12 +113,12 @@ def parse_free_policy(source):
     try:
     #if 1==1:
         for section in free_config.sections():
-            debug_message(2,"parsing section "+section)
+            tama.debug_message(2,"parsing section "+section)
             if free_config.has_option(section, "start_hour"):
-                debug_message(3,"section "+section+" has start_hour")
+                tama.debug_message(3,"section "+section+" has start_hour")
                 hour = free_config.getint(section,"start_hour")
                 if free_config.has_option(section, "start_minute"):
-                    debug_message(3,"section "+section+" has start_minute")
+                    tama.debug_message(3,"section "+section+" has start_minute")
                     minute = free_config.getint(section,"start_minute")
                 else:
                     minute = 0
@@ -248,7 +240,7 @@ def increase_free_client(num):
     for client in available:
         if i>=num:
             break
-        debug_message(2,"Accendo "+client.name)
+        tama.debug_message(2,"Accendo "+client.name)
         client.switch_on_multithreading()
         i=i+1
     
@@ -265,7 +257,7 @@ def check_always_on():
         filter(tama.Client.state > 0).\
         all()
     for client in targets:
-        debug_message(2,"Turning on "+client.name+" for always_on")
+        tama.debug_message(2,"Turning on "+client.name+" for always_on")
         client.switch_on_multithreading()
     return len(targets)
     
@@ -275,7 +267,7 @@ def sig_exit(signum, frame):
     Manage SIGTERM or SIGINT (ctrl+C) to close the program properly
     
     """
-    debug_message(4, "Closing tamaserver...")
+    tama.debug_message(4, "Closing tamaserver...")
     stop_pid()
 
 signal.signal(signal.SIGTERM,sig_exit)
@@ -284,19 +276,23 @@ signal.signal(signal.SIGINT,sig_exit)
 start_pid()
 rules = []
 rules = parse_free_policy(free_policy_file)
-debug_message(4,"Policy: "+str(rules))
+tama.debug_message(4,"Policy: "+str(rules))
 
 while (1):
     # main loop    
     tama.refresh_data()
     num = compute_action(rules)
     check_always_on()
-    debug_message(2,"delta client = "+str(num))
-    sys.stdout.flush()
+    tama.debug_message(2,"delta client = "+str(num))
     if num < 0:
         decrease_free_client(-num)
     elif num > 0:
         increase_free_client(num)
+    try:
+        os.system(tama_dir+"tamaweb.py")
+    except:
+        tama.debug_message(1,"tamaweb exited with error")
+    sys.stdout.flush()    
     time.sleep(5*60)
 
 

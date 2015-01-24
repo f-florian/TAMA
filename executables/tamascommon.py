@@ -53,8 +53,8 @@ TAMA_CONFIG_FILE = "/etc/tama/tama.ini"
 _debug = 0
 
 def debug_message (level, msg):
-    #if level <=_debug:
-    print "[" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "] [Tamascommon - debug] "+str(msg)
+    if level <=_debug:
+        print "[" + str(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")) + "] [Tamascommon - debug] "+str(msg)
 
 
 debug_message(4,"parsing "+TAMA_CONFIG_FILE)
