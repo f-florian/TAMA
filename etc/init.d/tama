@@ -21,7 +21,7 @@ start() {
         exit 1
     else
         ## Change from /dev/null to something like /var/log/$PROG if you want to save output.
-            $PROG_PATH/$PROG.py $PROG_ARGS 2>&1 >/dev/null &
+            $PROG_PATH/$PROG.py $PROG_ARGS 2>&1 >/var/log/$PROG &
 	    #/etc/init.d/rsyslog restart
         echo "$PROG started"
     fi
@@ -41,7 +41,7 @@ stop() {
     else
         ## Program is not running, exit with error.
         echo "Error! $PROG not started!" 1>&2
-        exit 1
+        return 1
     fi
 }
 
