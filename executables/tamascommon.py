@@ -174,10 +174,10 @@ class Client(Base):
         self.auto_off = auto_off
         self.always_on = always_on
         self.count = count
-        self.last_on = datetime.datetime.now()
-        self.last_off = datetime.datetime.now()
-        self.last_busy = datetime.datetime.now()
-        self.last_refresh = datetime.datetime.now()
+        self.last_on = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_off = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_busy = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.last_refresh = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         self.pos_x = pos_x
         self.pos_y = pos_y
     
@@ -234,17 +234,17 @@ class Client(Base):
             # the first time offline
             self.state = 2
             self.users = -2
-            self.last_off = datetime.datetime.now()
+            self.last_off = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         if (not online):
             debug_message(3,"Client "+self.name+" not online")
-            self.last_refresh = datetime.datetime.now()
+            self.last_refresh = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             session.commit()
             return
 
         if online:
             if self.state < 5:
                 # the first time online
-                self.last_on = datetime.datetime.now()
+                self.last_on = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.state=7
         try:
             (stdout, stderr) = subprocess.Popen([tama_dir+"tamacheck.sh",self.ip], stdout=subprocess.PIPE).communicate()
@@ -256,15 +256,15 @@ class Client(Base):
             self.state = 5
             self.users = -1
             debug_message(2,self.name+": ssh not working")
-            self.last_refresh = datetime.datetime.now()
+            self.last_refresh = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             session.commit()
             return
         else:
             if self.users > 0:
-                self.last_busy = datetime.datetime.now()
+                self.last_busy = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
                 
-        self.temperatures.append(Temperature(datetime.datetime.now(),temp))
-        self.last_refresh = datetime.datetime.now()
+        self.temperatures.append(Temperature(datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"),temp))
+        self.last_refresh = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         session.commit()
 
 
